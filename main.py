@@ -5,7 +5,7 @@ from cv2 import VideoCapture
 
 
 def get_total_pdf_pages(path: str):
-    pass
+    return sum(PdfFileReader(open(f, 'rb')).getNumPages() for f in Path(path).rglob("*.pdf"))
 
 
 def get_total_video_seconds(path: str):
@@ -26,7 +26,7 @@ def main():
         result['pdf_pages'] += get_total_pdf_pages(path)
         result['video_seconds'] += get_total_video_seconds(path)
 
-    print("stats here")
+    print(result)
 
 
 if __name__ == "__main__":
