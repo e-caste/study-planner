@@ -1,7 +1,7 @@
-from sys import argv, stderr
+from sys import argv
 from pathlib import Path
 from PyPDF2 import PdfFileReader
-from cv2 import VideoCapture
+from cv2 import VideoCapture, CAP_PROP_POS_MSEC
 
 
 def get_total_pdf_pages(path: str):
@@ -9,7 +9,7 @@ def get_total_pdf_pages(path: str):
 
 
 def get_total_video_seconds(path: str):
-    pass
+    return sum(VideoCapture(f).get(CAP_PROP_POS_MSEC) for ext in [".mp4", ".flv", ".mov"] for f in Path(path).rglob(f"*{ext}")) / 1000
 
 
 def main():
