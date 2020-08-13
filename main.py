@@ -5,7 +5,7 @@ from cv2 import VideoCapture, CAP_PROP_POS_MSEC
 
 
 def get_total_pdf_pages(path: str):
-    return sum(PdfFileReader(open(f, 'rb')).getNumPages() for f in Path(path).rglob("*.pdf"))
+    return sum(PdfFileReader(open(f, 'rb'), strict=False).getNumPages() for f in Path(path).rglob("*.pdf"))
 
 
 def get_total_video_seconds(path: str):
