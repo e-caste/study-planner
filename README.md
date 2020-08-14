@@ -1,6 +1,6 @@
 # study-planner
 [![Supported Python versions](https://img.shields.io/badge/python-3.6-brightgreen)]() [![GitHub license](https://img.shields.io/github/license/e-caste/study-planner)](https://github.com/e-caste/study-planner/blob/master/LICENSE) [![version](https://img.shields.io/badge/version-1.0-orange)]()    
-A CLI tool to get a quick analysis from in terms of required time to study its content
+A CLI tool to get a quick analysis from a directory in terms of required time to study its content
 
 ### Example usage
 
