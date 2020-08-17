@@ -1,2 +1,6 @@
+altgraph==0.17
+macholib==1.14
 pymediainfo==4.2.1
 PyPDF2==1.26.0
+PyQt5==5.15.0
+PyQt5-sip==12.8.0
