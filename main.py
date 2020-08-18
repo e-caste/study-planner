@@ -1,8 +1,10 @@
-from sys import argv, stderr
+from sys import argv, exit as sysexit, stderr
 from pathlib import Path
 from PyPDF2 import PdfFileReader
+from PyQt5.QtCore import QRect
 from pymediainfo import MediaInfo
-
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QFileDialog, QHBoxLayout, QVBoxLayout, \
+    QPushButton, QFrame
 
 video_exts = [".mp4", ".flv", ".mov", ".avi"]
 
@@ -38,68 +40,153 @@ def get_total_video_seconds(path: str) -> float:
     return sum(MediaInfo.parse(f).tracks[0].duration for ext in video_exts for f in Path(path).rglob(f"*{ext}")) / 1000
 
 
+def get_result(path: str):
+    return {
+        'pdf_pages': get_total_pdf_pages(path),
+        'pdf_documents': get_total_files(path, type="doc"),
+        'video_seconds': get_total_video_seconds(path),
+        'videos': get_total_files(path, type="vid"),
+    }
+
+
 def _separate_sections():
     print("~" * 42)
 
 
-def print_work_amount_analysis(pdf_pages: int, pdf_documents: int, video_seconds: float, videos: int):
-    print()
+def get_work_amount_analysis(pdf_pages: int, pdf_documents: int, video_seconds: float, videos: int):
+    result = ["", "", ""]
 
     if pdf_pages == 0:
-        print("It seems there are no pdfs to study in the given directories.")
+        result[0] += "It seems there are no pdfs to study in the given directories."
     else:
         pdf_time = pdf_pages * 120
-        print(f"There are {pdf_pages} pdf pages to study in the given directories spanning {pdf_documents} files.\n"
-              f"At 1 minute per page, it will take you {_human_readable_time(pdf_pages * 60)} to study these "
-              f"documents.\n"
-              f"At 2 minutes per page, it will take you {_human_readable_time(pdf_time)} to study these documents.\n"
-              f"Instead, skimming very quickly (20 seconds per page) will take you "
-              f"{_human_readable_time(pdf_pages * 20)}.")
-
-    _separate_sections()
+        result[0] += f"There are {pdf_pages} pdf pages to study in the given directories spanning {pdf_documents} files.\n" \
+                     f"At 1 minute per page, it will take you {_human_readable_time(pdf_pages * 60)} to study these " \
+                     f"documents.\n" \
+                     f"At 2 minutes per page, it will take you {_human_readable_time(pdf_time)} to study these documents.\n" \
+                     f"Instead, skimming very quickly (20 seconds per page) will take you " \
+                     f"{_human_readable_time(pdf_pages * 20)}."
 
     if video_seconds == 0:
-        print("It seems there are no video lectures to watch in the given directories.")
+        result[1] += "It seems there are no video lectures to watch in the given directories."
     else:
-        print(f"There are {_human_readable_time(video_seconds)} to watch in the given directories divided between "
-              f"{videos} videos.\n"
-              f"At 1.5x it will take you {_human_readable_time(video_seconds / 1.5)} to finish.\n"
-              f"At 2x it will take you {_human_readable_time(video_seconds / 2)}.\n"
-              f"Instead, accounting for pauses to take notes (0.75x), it will take you "
-              f"{_human_readable_time(video_seconds / 0.75)}.")
+        result[1] += f"There are {_human_readable_time(video_seconds)} to watch in the given directories divided between " \
+                     f"{videos} videos.\n" \
+                     f"At 1.5x it will take you {_human_readable_time(video_seconds / 1.5)} to finish.\n" \
+                     f"At 2x it will take you {_human_readable_time(video_seconds / 2)}.\n" \
+                     f"Instead, accounting for pauses to take notes (0.75x), it will take you " \
+                     f"{_human_readable_time(video_seconds / 0.75)}."
 
     if pdf_pages > 0 and video_seconds > 0:
-        _separate_sections()
-        print(f"In total, it will take you approximately {_human_readable_time(pdf_time + video_seconds)} "
-              f"to study everything in the given directories.\n"
-              f"Going very fast (20 seconds per page, watching videos at 2x) will take you "
-              f"{_human_readable_time(pdf_pages * 20 + video_seconds / 2)}.\n"
-              f"Taking your time to master the subject (2 minutes per page, watching videos at 0.75x) will take you "
-              f"{_human_readable_time(pdf_pages * 120 + video_seconds / 0.75)}.")
+        result[2] += f"In total, it will take you approximately {_human_readable_time(pdf_time + video_seconds)} " \
+                     f"to study everything in the given directories.\n" \
+                     f"Going very fast (20 seconds per page, watching videos at 2x) will take you " \
+                     f"{_human_readable_time(pdf_pages * 20 + video_seconds / 2)}.\n" \
+                     f"Taking your time to master the subject (2 minutes per page, watching videos at 0.75x) will take you " \
+                     f"{_human_readable_time(pdf_pages * 120 + video_seconds / 0.75)}."
+
+    return result
+
+
+class Window(QMainWindow):
+    def __init__(self):
+        # noinspection PyArgumentList
+        super().__init__()
+        self.init_ui()
+
+    def init_ui(self):
+        welcome = Welcome()
+        self.setCentralWidget(welcome)
+
+        self.setWindowTitle("Study Planner")
+        # self.setWindowIcon(QIcon("path here")))
+
+        self.show()
+
+
+class Welcome(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.info = QLabel("Choose an exam directory to get an estimation of the time required to study its contents.")
+        self.choose_directory_button = QPushButton("Choose directory")
+        self.choose_directory_button.clicked.connect(lambda: self.show_file_dialog())
+
+        v_box = QVBoxLayout()
+        v_box.addWidget(self.info)
+        h_box = QHBoxLayout()
+        h_box.addStretch()
+        h_box.addWidget(self.choose_directory_button)
+        h_box.addStretch()
+        v_box.addLayout(h_box)
+        self.setLayout(v_box)
+
+    def show_file_dialog(self):
+        # window.takeCentralWidget()
+        # window.setCentralWidget(FileDialog())
+        FileDialog()
+
+
+class FileDialog(QWidget):
+    def __init__(self):
+        # noinspection PyArgumentList
+        super().__init__()
+        self.show_result_widget()
+
+    def show_result_widget(self):
+        path = str(QFileDialog.getExistingDirectory(self, "Choose directory"))
+        # window.takeCentralWidget()
+        # window.setCentralWidget(ShowResult(path))
+        ShowResult(path)
+
+
+class HLine(QFrame):
+    def __init__(self):
+        super().__init__()
+        self.setObjectName("line")
+        self.setGeometry(QRect(320, 150, 118, 3))
+        self.setFrameShape(QFrame.HLine)
+        self.setFrameShadow(QFrame.Sunken)
+
+
+class ShowResult(QWidget):
+    def __init__(self, path: str):
+        # noinspection PyArgumentList
+        super().__init__()
+
+        self.analysis = self.get_analysis(path)
+        self.analysis_docs = QLabel(self.analysis[0])
+        self.analysis_docs.setWordWrap(True)
+        self.analysis_vids = QLabel(self.analysis[1])
+        self.analysis_vids.setWordWrap(True)
+        self.analysis_tot = QLabel(self.analysis[2])
+        self.analysis_tot.setWordWrap(True)
+
+        v_box = QVBoxLayout()
+        v_box.addWidget(self.analysis_docs)
+        v_box.addWidget(HLine())
+        v_box.addWidget(self.analysis_vids)
+        if self.analysis_tot:
+            v_box.addWidget(HLine())
+            v_box.addWidget(self.analysis_tot)
+
+        self.setLayout(v_box)
+        window.takeCentralWidget()
+        window.setCentralWidget(self)
+
+    def get_analysis(self, path):
+        result = get_result(path)
+        analysis = get_work_amount_analysis(result['pdf_pages'],
+                                            result['pdf_documents'],
+                                            result['video_seconds'],
+                                            result['videos'])
+        return analysis
 
 
 def main():
-    if len(argv) == 0:
-        paths = ["."]
-    else:
-        paths = argv[1:]
-
-    result = {
-        'pdf_pages': 0,
-        'pdf_documents': 0,
-        'video_seconds': 0.,
-        'videos': 0,
-    }
-    for path in paths:
-        result['pdf_pages'] += get_total_pdf_pages(path)
-        result['pdf_documents'] += get_total_files(path, type="doc")
-        result['video_seconds'] += get_total_video_seconds(path)
-        result['videos'] += get_total_files(path, type="vid")
-
-    print_work_amount_analysis(result['pdf_pages'],
-                               result['pdf_documents'],
-                               result['video_seconds'],
-                               result['videos'])
+    app = QApplication(argv)
+    global window
+    window = Window()
+    sysexit(app.exec_())
 
 
 if __name__ == "__main__":
