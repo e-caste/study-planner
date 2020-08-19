@@ -132,8 +132,25 @@ class FileDialog(QWidget):
         self.show_result_widget()
 
     def show_result_widget(self):
+        LoadingScreen()
         path = str(QFileDialog.getExistingDirectory(self, "Choose directory"))
         ShowResult(path)
+
+
+class LoadingScreen(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.loading_text = QLabel("Loading...")
+        # TODO: add spinner from https://github.com/snowwlex/QtWaitingSpinner
+        # self.loading_spinner = QtWaitingSpinner()
+        h_box = QHBoxLayout()
+        h_box.addStretch()
+        h_box.addWidget(self.loading_text)
+        h_box.addStretch()
+        self.setLayout(h_box)
+
+        window.takeCentralWidget()
+        window.setCentralWidget(self)
 
 
 class HLine(QFrame):
