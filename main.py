@@ -166,7 +166,7 @@ class ShowResult(QWidget):
         v_box.addWidget(self.analysis_docs)
         v_box.addWidget(HLine())
         v_box.addWidget(self.analysis_vids)
-        if self.analysis_tot:
+        if len(self.analysis_tot.text()) > 0:
             v_box.addWidget(HLine())
             v_box.addWidget(self.analysis_tot)
         self.setLayout(v_box)
