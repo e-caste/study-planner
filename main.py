@@ -122,8 +122,6 @@ class Welcome(QWidget):
         self.setLayout(v_box)
 
     def show_file_dialog(self):
-        # window.takeCentralWidget()
-        # window.setCentralWidget(FileDialog())
         FileDialog()
 
 
@@ -135,8 +133,6 @@ class FileDialog(QWidget):
 
     def show_result_widget(self):
         path = str(QFileDialog.getExistingDirectory(self, "Choose directory"))
-        # window.takeCentralWidget()
-        # window.setCentralWidget(ShowResult(path))
         ShowResult(path)
 
 
