@@ -49,10 +49,6 @@ def get_result(path: str):
     }
 
 
-def _separate_sections():
-    print("~" * 42)
-
-
 def get_work_amount_analysis(pdf_pages: int, pdf_documents: int, video_seconds: float, videos: int):
     result = ["", "", ""]
 
