@@ -4,7 +4,7 @@ from PyPDF2 import PdfFileReader
 from PyQt5.QtCore import QRect
 from pymediainfo import MediaInfo
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QFileDialog, QHBoxLayout, QVBoxLayout, \
-    QPushButton, QFrame
+    QPushButton, QFrame, QSizePolicy
 
 video_exts = [".mp4", ".flv", ".mov", ".avi"]
 
@@ -60,12 +60,13 @@ def get_work_amount_analysis(pdf_pages: int, pdf_documents: int, video_seconds: 
         result[0] += "It seems there are no pdfs to study in the given directories."
     else:
         pdf_time = pdf_pages * 120
-        result[0] += f"There are {pdf_pages} pdf pages to study in the given directories spanning {pdf_documents} files.\n" \
+        # the initial and ending newlines are used to not cut off the QLabel in ShowResult
+        result[0] += f"\nThere are {pdf_pages} pdf pages to study in the given directories spanning {pdf_documents} files.\n" \
                      f"At 1 minute per page, it will take you {_human_readable_time(pdf_pages * 60)} to study these " \
                      f"documents.\n" \
                      f"At 2 minutes per page, it will take you {_human_readable_time(pdf_time)} to study these documents.\n" \
                      f"Instead, skimming very quickly (20 seconds per page) will take you " \
-                     f"{_human_readable_time(pdf_pages * 20)}."
+                     f"{_human_readable_time(pdf_pages * 20)}.\n"
 
     if video_seconds == 0:
         result[1] += "It seems there are no video lectures to watch in the given directories."
@@ -168,8 +169,9 @@ class ShowResult(QWidget):
         if self.analysis_tot:
             v_box.addWidget(HLine())
             v_box.addWidget(self.analysis_tot)
-
         self.setLayout(v_box)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+
         window.takeCentralWidget()
         window.setCentralWidget(self)
 
