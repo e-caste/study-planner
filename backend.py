@@ -1,6 +1,9 @@
 from sys import stderr
 from pathlib import Path
+from typing import Tuple
+
 from PyPDF2 import PdfFileReader
+from PyPDF2.utils import PdfReadError
 from pymediainfo import MediaInfo
 
 
@@ -20,8 +23,15 @@ def _human_readable_time(seconds) -> str:
         return f"{hours} hour(s) and {int((seconds - hours * 3600) / 60)} minute(s)"
 
 
-def get_total_pdf_pages(path: str) -> int:
-    return sum(PdfFileReader(open(f, 'rb'), strict=False).getNumPages() for f in Path(path).rglob("*.pdf"))
+def get_total_pdf_pages(path: str) -> Tuple[int, bool]:
+    total_pages = 0
+    read_error = False
+    for f in Path(path).rglob("*.pdf"):
+        try:
+            total_pages += PdfFileReader(open(f, 'rb'), strict=False).getNumPages()
+        except PdfReadError:
+            read_error = True
+    return total_pages, read_error
 
 
 def get_total_files(path: str, type: str) -> int:
@@ -39,8 +49,10 @@ def get_total_video_seconds(path: str) -> float:
 
 
 def get_result(path: str):
+    pdf_pages, pdf_read_error = get_total_pdf_pages(path)
     return {
-        'pdf_pages': get_total_pdf_pages(path),
+        'pdf_pages': pdf_pages,
+        'pdf_read_error': pdf_read_error,
         'pdf_documents': get_total_files(path, type="doc"),
         'video_seconds': get_total_video_seconds(path),
         'videos': get_total_files(path, type="vid"),
