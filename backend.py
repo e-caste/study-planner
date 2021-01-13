@@ -59,7 +59,11 @@ def get_result(path: str):
     }
 
 
-def get_work_amount_analysis(pdf_pages: int, pdf_documents: int, video_seconds: float, videos: int):
+def get_work_amount_analysis(pdf_pages: int,
+                             pdf_read_error: bool,
+                             pdf_documents: int,
+                             video_seconds: float,
+                             videos: int):
     result = ["", "", ""]
 
     if pdf_pages == 0:
@@ -73,6 +77,9 @@ def get_work_amount_analysis(pdf_pages: int, pdf_documents: int, video_seconds: 
                      f"At 2 minutes per page, it will take you {_human_readable_time(pdf_time)} to study these documents.\n" \
                      f"Instead, skimming very quickly (20 seconds per page) will take you " \
                      f"{_human_readable_time(pdf_pages * 20)}.\n"
+
+    if pdf_read_error:                                                    # these vv 2 spaces are required for the UI
+        result[0] += "\nIt seems some PDF documents could not be opened correctly,  they have been skipped.\n"
 
     if video_seconds == 0:
         result[1] += "It seems there are no video lectures to watch in the given directories."

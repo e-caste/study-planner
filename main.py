@@ -107,6 +107,7 @@ class ShowResult(QWidget):
     def get_analysis(self, path):
         result = get_result(path)
         analysis = get_work_amount_analysis(result['pdf_pages'],
+                                            result['pdf_read_error'],
                                             result['pdf_documents'],
                                             result['video_seconds'],
                                             result['videos'])
