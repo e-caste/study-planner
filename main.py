@@ -42,6 +42,10 @@ class Window(QMainWindow):
         self.show()
 
 
+def show_file_dialog():
+    FileDialog(last_dir=get_last_dir())
+
+
 class Welcome(QWidget):
     def __init__(self, retry: bool = False):
         super().__init__()
@@ -49,7 +53,7 @@ class Welcome(QWidget):
         self.info = QLabel(f"{try_again}Choose an exam directory to get an estimation of the time required to "
                            f"study its contents.")
         self.choose_directory_button = QPushButton(BTN_TITLE_TEXT)
-        self.choose_directory_button.clicked.connect(lambda: self.show_file_dialog())
+        self.choose_directory_button.clicked.connect(lambda: show_file_dialog())
 
         v_box = QVBoxLayout()
         v_box.addWidget(self.info)
@@ -59,9 +63,6 @@ class Welcome(QWidget):
         h_box.addStretch()
         v_box.addLayout(h_box)
         self.setLayout(v_box)
-
-    def show_file_dialog(self):
-        FileDialog(last_dir=get_last_dir())
 
 
 # see https://stackoverflow.com/a/64340482
@@ -176,14 +177,24 @@ class ShowResult(QWidget):
         v_box.addWidget(self.analysis_docs)
         v_box.addWidget(HLine())
         v_box.addWidget(self.analysis_vids)
+
         height = int(2/3 * self.analysis_docs.height())
         if len(self.analysis_tot.text()) > 0:
             v_box.addWidget(HLine())
             v_box.addWidget(self.analysis_tot)
             height = int(self.analysis_docs.height())
-        # self.analysis_docs.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+
+        self.choose_directory_button = QPushButton(BTN_TITLE_TEXT)
+        self.choose_directory_button.clicked.connect(lambda: show_file_dialog())
+        height += 10
+
+        h_box = QHBoxLayout()
+        h_box.addStretch()
+        h_box.addWidget(self.choose_directory_button)
+        h_box.addStretch()
+        v_box.addLayout(h_box)
+
         self.setLayout(v_box)
-        # self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
         window.takeCentralWidget()
         window.setCentralWidget(self)
