@@ -1,8 +1,14 @@
 from sys import argv, exit as sysexit
-from backend import get_result, get_work_amount_analysis
+import os
+from pathlib import Path
+
 from PyQt5.QtCore import QRect
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QFileDialog, QHBoxLayout, QVBoxLayout, \
     QPushButton, QFrame, QSizePolicy, QLineEdit, QDialog, QStackedWidget, QTreeView
+
+from backend import get_result, get_work_amount_analysis
+
+DB_FILE = "_study_planner_db.txt"
 
 
 class Window(QMainWindow):
@@ -19,6 +25,19 @@ class Window(QMainWindow):
         # self.setWindowIcon(QIcon("path here")))
 
         self.show()
+
+
+def get_last_dir():
+    if not os.path.exists(DB_FILE):
+        with open(DB_FILE, 'w') as f:
+            f.write(str(Path.home()))
+    with open(DB_FILE, 'r') as f:
+        return f.read()
+
+
+def set_last_dir(last_dir: str):
+    with open(DB_FILE, 'w') as f:
+        f.write(last_dir.strip())
 
 
 class Welcome(QWidget):
@@ -39,7 +58,7 @@ class Welcome(QWidget):
 
     def show_file_dialog(self):
         LoadingScreen()
-        FileDialog()
+        FileDialog(last_dir=get_last_dir())
 
 
 # see https://stackoverflow.com/a/64340482
@@ -91,20 +110,23 @@ def get_open_files_and_dirs(parent=None, caption='', directory='',
 
 # TODO: show tree macOS style - this is surprisingly difficult, leaving as is for now
 class FileDialog(QWidget):
-    def __init__(self):
+    def __init__(self, last_dir: str):
         # noinspection PyArgumentList
         super().__init__()
         self.title = "Choose files and/or directories"
-        self.last_dir = "/"
+        self.last_dir = last_dir
 
         self.show_result_widget()
 
     def show_result_widget(self):
-        paths = get_open_files_and_dirs(caption="Choose files or directory", directory=self.last_dir)
-        print(paths)
-        sysexit()
-        # # TODO: if not paths: ...
-        # ShowResult(paths)
+        paths = get_open_files_and_dirs(caption="Choose files or directory",
+                                        directory=self.last_dir)
+        if not paths:
+            ...
+            # Welcome()
+        else:
+            set_last_dir(str(Path(paths[0]).parent))
+            # ShowResult(paths)
 
 
 class LoadingScreen(QWidget):
