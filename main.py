@@ -2,7 +2,7 @@ from sys import argv, exit as sysexit
 from backend import get_result, get_work_amount_analysis
 from PyQt5.QtCore import QRect
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QFileDialog, QHBoxLayout, QVBoxLayout, \
-    QPushButton, QFrame, QSizePolicy
+    QPushButton, QFrame, QSizePolicy, QLineEdit, QDialog, QStackedWidget, QTreeView
 
 
 class Window(QMainWindow):
@@ -38,19 +38,73 @@ class Welcome(QWidget):
         self.setLayout(v_box)
 
     def show_file_dialog(self):
+        LoadingScreen()
         FileDialog()
 
 
+# see https://stackoverflow.com/a/64340482
+def get_open_files_and_dirs(parent=None, caption='', directory='',
+                            filter='', initial_filter='', options=None):
+    def update_text():
+        # update the contents of the line edit widget with the selected files
+        selected = []
+        for index in view.selectionModel().selectedRows():
+            selected.append(index.data())
+        line_edit.setText(",  ".join(selected))
+
+    dialog = QFileDialog(parent, caption)
+    dialog.setFileMode(dialog.ExistingFiles)
+    if options:
+        dialog.setOptions(options)
+    dialog.setOption(dialog.DontUseNativeDialog, True)
+    dialog.setOption(dialog.DontUseCustomDirectoryIcons, True)
+    if directory:
+        dialog.setDirectory(directory)
+    if filter:
+        dialog.setNameFilter(filter)
+        if initial_filter:
+            dialog.selectNameFilter(initial_filter)
+
+    # by default, if a directory is opened in file listing mode,
+    # QFileDialog.accept() shows the contents of that directory, but we
+    # need to be able to "open" directories as we can do with files, so we
+    # just override accept() with the default QDialog implementation which
+    # will just return exec_()
+    dialog.accept = lambda: QDialog.accept(dialog)
+
+    # there are many item views in a non-native dialog, but the ones displaying
+    # the actual contents are created inside a QStackedWidget; they are a
+    # QTreeView and a QListView, and the tree is only used when the
+    # viewMode is set to QFileDialog.Detail, which is not this case
+    dialog.setViewMode(QFileDialog.Detail)
+    stackedWidget = dialog.findChild(QStackedWidget)
+    view = stackedWidget.findChild(QTreeView)
+    view.selectionModel().selectionChanged.connect(update_text)
+
+    line_edit = dialog.findChild(QLineEdit)
+    # clear the line edit contents whenever the current directory changes
+    dialog.directoryEntered.connect(lambda: line_edit.setText(""))
+
+    dialog.exec_()
+    return dialog.selectedFiles()
+
+
+# TODO: show tree macOS style - this is surprisingly difficult, leaving as is for now
 class FileDialog(QWidget):
     def __init__(self):
         # noinspection PyArgumentList
         super().__init__()
+        self.title = "Choose files and/or directories"
+        self.last_dir = "/"
+
         self.show_result_widget()
 
     def show_result_widget(self):
-        LoadingScreen()
-        path = str(QFileDialog.getExistingDirectory(self, "Choose directory"))
-        ShowResult(path)
+        paths = get_open_files_and_dirs(caption="Choose files or directory", directory=self.last_dir)
+        print(paths)
+        sysexit()
+        # # TODO: if not paths: ...
+        # ShowResult(paths)
 
 
 class LoadingScreen(QWidget):
