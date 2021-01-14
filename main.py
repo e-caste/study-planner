@@ -42,9 +42,11 @@ class Window(QMainWindow):
 
 
 class Welcome(QWidget):
-    def __init__(self):
+    def __init__(self, retry: bool = False):
         super().__init__()
-        self.info = QLabel("Choose an exam directory to get an estimation of the time required to study its contents.")
+        try_again = "You haven't selected any file or directory!\n\n" if retry else ""
+        self.info = QLabel(f"{try_again}Choose an exam directory to get an estimation of the time required to "
+                           f"study its contents.")
         self.choose_directory_button = QPushButton(BTN_TITLE_TEXT)
         self.choose_directory_button.clicked.connect(lambda: self.show_file_dialog())
 
@@ -58,7 +60,6 @@ class Welcome(QWidget):
         self.setLayout(v_box)
 
     def show_file_dialog(self):
-        LoadingScreen()
         FileDialog(last_dir=get_last_dir())
 
 
@@ -120,11 +121,12 @@ class FileDialog(QWidget):
         self.show_result_widget()
 
     def show_result_widget(self):
+        LoadingScreen()
         paths = get_open_files_and_dirs(caption=BTN_TITLE_TEXT,
                                         directory=self.last_dir)
         if not paths:
-            ...
-            Welcome()
+            window.takeCentralWidget()
+            window.setCentralWidget(Welcome(retry=True))
         else:
             print(paths, str(Path(paths[0]).parent))
             set_last_dir(str(Path(paths[0]).parent))
