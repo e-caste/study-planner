@@ -1,11 +1,11 @@
-from sys import argv, exit as sysexit
 import os
 from pathlib import Path
+from sys import argv, exit as sysexit
 from typing import List
 
 from PyQt5.QtCore import QRect
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QFileDialog, QHBoxLayout, QVBoxLayout, \
-    QPushButton, QFrame, QSizePolicy, QLineEdit, QDialog, QStackedWidget, QTreeView
+    QPushButton, QFrame, QLineEdit, QDialog, QStackedWidget, QTreeView
 
 from backend import get_result, get_work_amount_analysis
 
