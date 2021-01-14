@@ -175,14 +175,20 @@ class ShowResult(QWidget):
         v_box.addWidget(self.analysis_docs)
         v_box.addWidget(HLine())
         v_box.addWidget(self.analysis_vids)
+        height = int(2/3 * self.analysis_docs.height())
         if len(self.analysis_tot.text()) > 0:
             v_box.addWidget(HLine())
             v_box.addWidget(self.analysis_tot)
+            height = int(self.analysis_docs.height())
+        # self.analysis_docs.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.setLayout(v_box)
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        # self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
         window.takeCentralWidget()
         window.setCentralWidget(self)
+
+        # height = 160 * number_of_widgets
+        window.resize(window.width(), height)
 
     def get_analysis(self, path):
         result = get_result(path)
