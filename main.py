@@ -9,6 +9,20 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QFileDia
 from backend import get_result, get_work_amount_analysis
 
 DB_FILE = "_study_planner_db.txt"
+BTN_TITLE_TEXT = "Choose files and/or directories"
+
+
+def get_last_dir():
+    if not os.path.exists(DB_FILE):
+        with open(DB_FILE, 'w') as f:
+            f.write(str(Path.home()))
+    with open(DB_FILE, 'r') as f:
+        return f.read()
+
+
+def set_last_dir(last_dir: str):
+    with open(DB_FILE, 'w') as f:
+        f.write(last_dir.strip())
 
 
 class Window(QMainWindow):
@@ -27,24 +41,11 @@ class Window(QMainWindow):
         self.show()
 
 
-def get_last_dir():
-    if not os.path.exists(DB_FILE):
-        with open(DB_FILE, 'w') as f:
-            f.write(str(Path.home()))
-    with open(DB_FILE, 'r') as f:
-        return f.read()
-
-
-def set_last_dir(last_dir: str):
-    with open(DB_FILE, 'w') as f:
-        f.write(last_dir.strip())
-
-
 class Welcome(QWidget):
     def __init__(self):
         super().__init__()
         self.info = QLabel("Choose an exam directory to get an estimation of the time required to study its contents.")
-        self.choose_directory_button = QPushButton("Choose directory")
+        self.choose_directory_button = QPushButton(BTN_TITLE_TEXT)
         self.choose_directory_button.clicked.connect(lambda: self.show_file_dialog())
 
         v_box = QVBoxLayout()
@@ -113,18 +114,19 @@ class FileDialog(QWidget):
     def __init__(self, last_dir: str):
         # noinspection PyArgumentList
         super().__init__()
-        self.title = "Choose files and/or directories"
+        self.title = BTN_TITLE_TEXT
         self.last_dir = last_dir
 
         self.show_result_widget()
 
     def show_result_widget(self):
-        paths = get_open_files_and_dirs(caption="Choose files or directory",
+        paths = get_open_files_and_dirs(caption=BTN_TITLE_TEXT,
                                         directory=self.last_dir)
         if not paths:
             ...
-            # Welcome()
+            Welcome()
         else:
+            print(paths, str(Path(paths[0]).parent))
             set_last_dir(str(Path(paths[0]).parent))
             # ShowResult(paths)
 
