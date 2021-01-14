@@ -1,6 +1,6 @@
 from sys import stderr
 from pathlib import Path
-from typing import Tuple
+from typing import Tuple, List
 
 from PyPDF2 import PdfFileReader
 from PyPDF2.utils import PdfReadError
@@ -23,39 +23,63 @@ def _human_readable_time(seconds) -> str:
         return f"{hours} hour(s) and {int((seconds - hours * 3600) / 60)} minute(s)"
 
 
-def get_total_pdf_pages(path: str) -> Tuple[int, bool]:
+def _is_video_file(path: str) -> bool:
+    return any([path.endswith(ext) for ext in video_exts])
+
+
+def get_total_pdf_pages(paths: List[str]) -> Tuple[int, bool]:
     total_pages = 0
     read_error = False
-    for f in Path(path).rglob("*.pdf"):
-        try:
-            total_pages += PdfFileReader(open(f, 'rb'), strict=False).getNumPages()
-        except PdfReadError:
-            read_error = True
+    for path in paths:
+        if Path(path).is_file() and path.endswith(".pdf"):
+            total_pages += PdfFileReader(open(path, 'rb'), strict=False).getNumPages()
+        elif Path(path).is_dir():
+            for f in Path(path).rglob("*.pdf"):
+                try:
+                    total_pages += PdfFileReader(open(f, 'rb'), strict=False).getNumPages()
+                except PdfReadError:
+                    read_error = True
     return total_pages, read_error
 
 
-def get_total_files(path: str, type: str) -> int:
+def get_total_files(paths: List[str], type: str) -> int:
+    tot = 0
     if type == "doc":
-        return len(list(Path(path).rglob("*.pdf")))
+        for path in paths:
+            if Path(path).is_file():
+                tot += 1
+            elif Path(path).is_dir():
+                tot += len(list(Path(path).rglob("*.pdf")))
     elif type == "vid":
-        tot = 0
-        for ext in video_exts:
-            tot += len(list(Path(path).rglob(f"*{ext}")))
-        return tot
+        for path in paths:
+            if Path(path).is_file() and _is_video_file(path):
+                tot += 1
+            elif Path(path).is_dir():
+                for ext in video_exts:
+                    tot += len(list(Path(path).rglob(f"*{ext}")))
+    return tot
 
 
-def get_total_video_seconds(path: str) -> float:
-    return sum(MediaInfo.parse(f).tracks[0].duration for ext in video_exts for f in Path(path).rglob(f"*{ext}")) / 1000
+def get_total_video_seconds(paths: List[str]) -> float:
+    total_seconds = 0.
+    for path in paths:
+        if Path(path).is_file() and _is_video_file(path):
+            total_seconds += MediaInfo.parse(path).tracks[0].duration
+        elif Path(path).is_dir():
+            total_seconds += sum(MediaInfo.parse(f).tracks[0].duration
+                                 for ext in video_exts
+                                 for f in Path(path).rglob(f"*{ext}"))
+    return total_seconds / 1000
 
 
-def get_result(path: str):
-    pdf_pages, pdf_read_error = get_total_pdf_pages(path)
+def get_result(paths: List[str]) -> dict:
+    pdf_pages, pdf_read_error = get_total_pdf_pages(paths)
     return {
         'pdf_pages': pdf_pages,
         'pdf_read_error': pdf_read_error,
-        'pdf_documents': get_total_files(path, type="doc"),
-        'video_seconds': get_total_video_seconds(path),
-        'videos': get_total_files(path, type="vid"),
+        'pdf_documents': get_total_files(paths, type="doc"),
+        'video_seconds': get_total_video_seconds(paths),
+        'videos': get_total_files(paths, type="vid"),
     }
 
 

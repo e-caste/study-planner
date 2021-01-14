@@ -1,6 +1,7 @@
 from sys import argv, exit as sysexit
 import os
 from pathlib import Path
+from typing import List
 
 from PyQt5.QtCore import QRect
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QFileDialog, QHBoxLayout, QVBoxLayout, \
@@ -130,7 +131,7 @@ class FileDialog(QWidget):
         else:
             print(paths, str(Path(paths[0]).parent))
             set_last_dir(str(Path(paths[0]).parent))
-            # ShowResult(paths)
+            ShowResult(paths)
 
 
 class LoadingScreen(QWidget):
@@ -159,11 +160,11 @@ class HLine(QFrame):
 
 
 class ShowResult(QWidget):
-    def __init__(self, path: str):
+    def __init__(self, paths: List[str]):
         # noinspection PyArgumentList
         super().__init__()
 
-        self.analysis = self.get_analysis(path)
+        self.analysis = self.get_analysis(paths)
         self.analysis_docs = QLabel(self.analysis[0])
         self.analysis_docs.setWordWrap(True)
         self.analysis_vids = QLabel(self.analysis[1])
@@ -190,8 +191,8 @@ class ShowResult(QWidget):
         # height = 160 * number_of_widgets
         window.resize(window.width(), height)
 
-    def get_analysis(self, path):
-        result = get_result(path)
+    def get_analysis(self, paths: List[str]):
+        result = get_result(paths)
         analysis = get_work_amount_analysis(result['pdf_pages'],
                                             result['pdf_read_error'],
                                             result['pdf_documents'],
