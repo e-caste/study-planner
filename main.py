@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 from sys import argv, exit as sysexit
 from typing import List
@@ -9,12 +8,14 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QFileDia
 
 from backend import get_result, get_work_amount_analysis
 
-DB_FILE = "_study_planner_db.txt"
+DB_PATH = Path.joinpath(Path.home(), '.study_planner')
+DB_FILE = str(Path.joinpath(DB_PATH, '_study_planner_db.txt'))
 BTN_TITLE_TEXT = "Choose files and/or directories"
 
 
 def get_last_dir():
-    if not os.path.exists(DB_FILE):
+    Path.mkdir(DB_PATH, exist_ok=True)
+    if not Path(DB_FILE).exists():
         with open(DB_FILE, 'w') as f:
             f.write(str(Path.home()))
     with open(DB_FILE, 'r') as f:
