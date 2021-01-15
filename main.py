@@ -45,11 +45,7 @@ class Window(QMainWindow):
         # on Windows and GNU/Linux
         if not platform.startswith("darwin"):
             # see https://pyinstaller.readthedocs.io/en/stable/runtime-information.html
-            if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
-                bundle_dir = Path(sys._MEIPASS)
-            else:
-                bundle_dir = Path(__file__).parent
-            self.setWindowIcon(QIcon(str(Path.joinpath(Path.cwd(), bundle_dir, "icon_round.ico"))))
+            self.setWindowIcon(QIcon(str(Path.joinpath(Path.cwd(), __file__, "icons").with_name("icon_round.ico"))))
 
         self.show()
 
