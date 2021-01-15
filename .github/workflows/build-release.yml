@@ -34,7 +34,32 @@ jobs:
           tag: ${{ github.ref }}
 
   release-windows:
+    name: Release Windows app
     runs-on: windows-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.6'
+          architecture: x64
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+      - name: Create app with pyinstaller
+        run: pyinstaller --windowed --name "Study Planner" --icon icons/icon_round.png main.py
+      - name: Compress app to archive
+        run: |
+          cd dist
+          tar -a -c -f StudyPlanner.zip "Study Planner"
+          cd ..
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: dist/StudyPlanner.zip
+          asset_name: study-planner-windows-x86_64
+          tag: ${{ github.ref }}
 
   release-gnulinux:
     runs-on: ubuntu-latest
