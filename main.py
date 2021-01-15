@@ -5,6 +5,7 @@ from typing import List
 from PyQt5.QtCore import QRect
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QFileDialog, QHBoxLayout, QVBoxLayout, \
     QPushButton, QFrame, QLineEdit, QDialog, QStackedWidget, QTreeView
+from PyQt5.QtGui import QFont
 
 from backend import get_result, get_work_amount_analysis
 
@@ -187,14 +188,27 @@ class ShowResult(QWidget):
         self.analysis_tot = QLabel(self.analysis[2])
         self.analysis_tot.setWordWrap(True)
 
+        title_font = QFont()
+        title_font.setPointSize(15)
+        title_font.setBold(True)
+        self.docs_title = QLabel("Documents")
+        self.docs_title.setFont(title_font)
+        self.vids_title = QLabel("Videos")
+        self.vids_title.setFont(title_font)
+        self.tot_title = QLabel("Total")
+        self.tot_title.setFont(title_font)
+
         v_box = QVBoxLayout()
+        v_box.addWidget(self.docs_title)
         v_box.addWidget(self.analysis_docs)
         v_box.addWidget(HLine())
+        v_box.addWidget(self.vids_title)
         v_box.addWidget(self.analysis_vids)
 
         height = int(2/3 * self.analysis_docs.height())
         if len(self.analysis_tot.text()) > 0:
             v_box.addWidget(HLine())
+            v_box.addWidget(self.tot_title)
             v_box.addWidget(self.analysis_tot)
             height = int(self.analysis_docs.height())
 
@@ -214,7 +228,7 @@ class ShowResult(QWidget):
         window.setCentralWidget(self)
 
         # height = 160 * number_of_widgets
-        window.resize(window.width(), height + 10)
+        window.resize(window.width() + 50, height + 10)
 
 
 def main():
