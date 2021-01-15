@@ -92,9 +92,10 @@ def get_result(paths: List[str]) -> dict:
 
 
 def get_work_amount_analysis(pdf_pages: int,
-                             pdf_read_error: bool,
+                             pdf_error: bool,
                              pdf_documents: int,
                              video_seconds: float,
+                             video_error: bool,
                              videos: int):
     result = ["", "", ""]
 
@@ -110,8 +111,8 @@ def get_work_amount_analysis(pdf_pages: int,
                      f"Instead, skimming very quickly (20 seconds per page) will take you " \
                      f"{_human_readable_time(pdf_pages * 20)}.\n"
 
-    if pdf_read_error:                                                    # these vv 2 spaces are required for the UI
-        result[0] += "\nIt seems some PDF documents could not be opened correctly,  they have been skipped.\n"
+    if pdf_error:
+        result[0] += "\nIt seems some PDF documents could not be opened correctly, they have been skipped.\n"
 
     if video_seconds == 0:
         result[1] += "It seems there are no video lectures to watch in the given directories."
@@ -122,6 +123,9 @@ def get_work_amount_analysis(pdf_pages: int,
                      f"At 2x it will take you {_human_readable_time(video_seconds / 2)}.\n" \
                      f"Instead, accounting for pauses to take notes (0.75x), it will take you " \
                      f"{_human_readable_time(video_seconds / 0.75)}."
+
+    if video_error:
+        result[1] += "\nIt seems some video files could not be opened correctly, they have been skipped.\n"
 
     if pdf_pages > 0 and video_seconds > 0:
         result[2] += f"In total, it will take you approximately {_human_readable_time(pdf_time + video_seconds)} " \
