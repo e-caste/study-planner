@@ -47,15 +47,19 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements-dev.txt
       - name: Create app with pyinstaller
+        run: pyinstaller --windowed --name "Study Planner" --add-data icons;icons --icon icons\icon_round.ico --onefile main.py
+        shell: cmd
+      - name: Compress app to archive
         run: |
-          pyinstaller --windowed --name "Study Planner" --add-data icons;icons --icon icons\icon_round.ico --onefile main.py
-          shell: cmd
+         cd dist
+         tar -a -c -f StudyPlanner.zip "Study Planner"
+         cd ..
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: dist\"Study Planner.exe"
-          asset_name: study-planner-windows-x86_64
+          file: dist\StudyPlanner.zip
+          asset_name: study-planner-windows-x86_64.zip
           tag: ${{ github.ref }}
 
   release-gnulinux:
