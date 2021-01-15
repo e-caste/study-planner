@@ -2,7 +2,7 @@
 
 [![Supported Python versions](https://img.shields.io/badge/python-3.6-brightgreen?style=plastic)]() [![GitHub license](https://img.shields.io/github/license/e-caste/study-planner?style=plastic)](https://github.com/e-caste/study-planner/blob/master/LICENSE)    
 
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/e-caste/study-planner?style=social) 
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/e-caste/study-planner?style=social)](https://github.com/e-caste/study-planner/releases) 
 
 A cross-platform GUI to get a quick analysis from files and/or directories in terms of required time to study their contents
 
