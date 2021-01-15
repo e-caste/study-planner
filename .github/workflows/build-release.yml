@@ -52,7 +52,7 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: dist/"Study Planner.exe"
+          file: dist\"Study Planner.exe"
           asset_name: study-planner-windows-x86_64
           tag: ${{ github.ref }}
 
@@ -70,16 +70,11 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements-dev.txt
       - name: Create app with pyinstaller
-        run: pyinstaller --name "Study Planner" --icon icons/icon_round.png main.py
-      - name: Compress app to archive
-        run: |
-          cd dist
-          tar -czf StudyPlanner.tar.gz Study\ Planner
-          cd ..
+        run: pyinstaller --windowed --name "Study Planner" --add-data icons:icons --icon icons/icon_round.ico --onefile main.py
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: dist/StudyPlanner.tar.gz
+          file: dist/Study\ Planner
           asset_name: study-planner-gnulinux-x86_64
           tag: ${{ github.ref }}
