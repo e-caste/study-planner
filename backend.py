@@ -60,16 +60,21 @@ def get_total_pdf_pages(paths: List[str]) -> Tuple[int, bool]:
     return total_pages, read_error
 
 
-def get_total_video_seconds(paths: List[str]) -> float:
+def get_total_video_seconds(paths: List[str]) -> Tuple[float, bool]:
     total_seconds = 0.
+    error = False
     for path in paths:
-        if Path(path).is_file() and _is_video_file(path):
-            total_seconds += MediaInfo.parse(path).tracks[0].duration
-        elif Path(path).is_dir():
-            total_seconds += sum(MediaInfo.parse(f).tracks[0].duration
-                                 for ext in video_exts
-                                 for f in Path(path).rglob(f"*{ext}"))
-    return total_seconds / 1000
+        try:
+            if Path(path).is_file() and _is_video_file(path):
+                total_seconds += MediaInfo.parse(path).tracks[0].duration
+            elif Path(path).is_dir():
+                for ext in video_exts:
+                    for f in Path(path).rglob(f"*{ext}"):
+                        total_seconds += MediaInfo.parse(f).tracks[0].duration
+        except (FileNotFoundError, IOError, RuntimeError, Exception) as e:
+            print(e)
+            error = True
+    return total_seconds / 1000, error
 
 
 def get_result(paths: List[str]) -> dict:
