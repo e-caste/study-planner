@@ -135,4 +135,5 @@ def get_work_amount_analysis(pdf_pages: int,
                      f"Taking your time to master the subject (2 minutes per page, watching videos at 0.75x) will take you " \
                      f"{_human_readable_time(pdf_pages * 120 + video_seconds / 0.75)}."
 
-    return result
+    # add second space after comma so that UI displays correctly
+    return [text.replace(", ", ",  ") for text in result]
