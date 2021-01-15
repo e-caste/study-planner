@@ -27,21 +27,6 @@ def _is_video_file(path: str) -> bool:
     return any([path.endswith(ext) for ext in video_exts])
 
 
-def get_total_pdf_pages(paths: List[str]) -> Tuple[int, bool]:
-    total_pages = 0
-    read_error = False
-    for path in paths:
-        if Path(path).is_file() and path.endswith(".pdf"):
-            total_pages += PdfFileReader(open(path, 'rb'), strict=False).getNumPages()
-        elif Path(path).is_dir():
-            for f in Path(path).rglob("*.pdf"):
-                try:
-                    total_pages += PdfFileReader(open(f, 'rb'), strict=False).getNumPages()
-                except PdfReadError:
-                    read_error = True
-    return total_pages, read_error
-
-
 def get_total_files(paths: List[str], type: str) -> int:
     tot = 0
     if type == "doc":
@@ -58,6 +43,21 @@ def get_total_files(paths: List[str], type: str) -> int:
                 for ext in video_exts:
                     tot += len(list(Path(path).rglob(f"*{ext}")))
     return tot
+
+
+def get_total_pdf_pages(paths: List[str]) -> Tuple[int, bool]:
+    total_pages = 0
+    read_error = False
+    for path in paths:
+        try:
+            if Path(path).is_file() and path.endswith(".pdf"):
+                total_pages += PdfFileReader(open(path, 'rb'), strict=False).getNumPages()
+            elif Path(path).is_dir():
+                for f in Path(path).rglob("*.pdf"):
+                        total_pages += PdfFileReader(open(f, 'rb'), strict=False).getNumPages()
+        except PdfReadError:
+            read_error = True
+    return total_pages, read_error
 
 
 def get_total_video_seconds(paths: List[str]) -> float:
