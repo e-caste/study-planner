@@ -52,7 +52,7 @@ jobs:
       - name: Compress app to archive
         run: |
          cd dist
-         tar -a -c -f StudyPlanner.zip "Study Planner"
+         tar -a -c -f StudyPlanner.zip "Study Planner.exe"
          cd ..
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2
