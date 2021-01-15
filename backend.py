@@ -47,7 +47,7 @@ def get_total_files(paths: List[str], type: str) -> int:
 
 def get_total_pdf_pages(paths: List[str]) -> Tuple[int, bool]:
     total_pages = 0
-    read_error = False
+    error = False
     for path in paths:
         try:
             if Path(path).is_file() and path.endswith(".pdf"):
@@ -55,9 +55,10 @@ def get_total_pdf_pages(paths: List[str]) -> Tuple[int, bool]:
             elif Path(path).is_dir():
                 for f in Path(path).rglob("*.pdf"):
                         total_pages += PdfFileReader(open(f, 'rb'), strict=False).getNumPages()
-        except PdfReadError:
-            read_error = True
-    return total_pages, read_error
+        except (PdfReadError, Exception) as e:
+            print(e)
+            error = True
+    return total_pages, error
 
 
 def get_total_video_seconds(paths: List[str]) -> Tuple[float, bool]:
