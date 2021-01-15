@@ -9,6 +9,16 @@ A cross-platform GUI to get a quick analysis from files and/or directories in te
   <img height="500" src="readme/mac_screeshot.png" alt="macOS">
 </p>
 
+### How to run
+
+1. Download the latest release for your platform on the right of this page
+2. Decompress the archive
+3. Run the application
+
+Some notes on point 3:
+- on macOS, you will have to double click the app while holding control, only then you will have the option to "Open" the app
+- on GNU/Linux, if you're using the Nautilus file manager (the default on Ubuntu), you will have to run the app from the terminal since double click does not work properly 
+
 ### How to develop
 - `git clone https://github.com/e-caste/study-planner`
 - `cd study-planner`
