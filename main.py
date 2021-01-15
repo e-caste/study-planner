@@ -45,7 +45,7 @@ class Window(QMainWindow):
         # on Windows and GNU/Linux
         if not platform.startswith("darwin"):
             # see https://pyinstaller.readthedocs.io/en/stable/runtime-information.html
-            self.setWindowIcon(QIcon(str(Path.joinpath(Path.cwd(), __file__, "icons").with_name("icon_round.ico"))))
+            self.setWindowIcon(QIcon(str(Path.joinpath(Path.cwd(), "icons", "icon_round.ico"))))
 
         self.show()
 
