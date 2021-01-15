@@ -19,7 +19,9 @@ def get_last_dir():
         with open(DB_FILE, 'w') as f:
             f.write(str(Path.home()))
     with open(DB_FILE, 'r') as f:
-        return f.read()
+        path = f.read()
+        # if the user or the system has changed the contents of the file, it may not contain a valid path
+        return path if Path(path).is_dir() else str(Path.home())
 
 
 def set_last_dir(last_dir: str):
