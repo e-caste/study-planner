@@ -77,6 +77,6 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: dist/Study\ Planner
+          file: dist/'Study Planner'
           asset_name: study-planner-gnulinux-x86_64
           tag: ${{ github.ref }}
