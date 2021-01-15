@@ -4,8 +4,8 @@
 A cross-platform GUI to get a quick analysis from files and/or directories in terms of required time to study their contents
 
 <p align="center">
-  <img height="500" src="readme/windows_screenshot.png" alt="Windows">
-  <img height="500" src="readme/ubuntu_screenshot.png" alt="Ubuntu">
+  <img height="300" src="readme/windows_screenshot.png" alt="Windows">
+  <img height="400" src="readme/ubuntu_screenshot.png" alt="Ubuntu">
   <img height="500" src="readme/mac_screeshot.png" alt="macOS">
 </p>
 
