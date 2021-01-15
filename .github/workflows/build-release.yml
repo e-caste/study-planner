@@ -47,7 +47,9 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements-dev.txt
       - name: Create app with pyinstaller
-        run: pyinstaller --windowed --name "Study Planner" --add-data icons;icons --icon icons\icon_round.ico --onefile main.py
+        run: |
+          pyinstaller --windowed --name "Study Planner" --add-data icons;icons --icon icons\icon_round.ico --onefile main.py
+          shell: cmd
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2
         with:
