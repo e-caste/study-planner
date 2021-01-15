@@ -79,12 +79,14 @@ def get_total_video_seconds(paths: List[str]) -> Tuple[float, bool]:
 
 
 def get_result(paths: List[str]) -> dict:
-    pdf_pages, pdf_read_error = get_total_pdf_pages(paths)
+    pdf_pages, pdf_error = get_total_pdf_pages(paths)
+    video_seconds, video_error = get_total_video_seconds(paths)
     return {
         'pdf_pages': pdf_pages,
-        'pdf_read_error': pdf_read_error,
+        'pdf_error': pdf_error,
         'pdf_documents': get_total_files(paths, type="doc"),
-        'video_seconds': get_total_video_seconds(paths),
+        'video_seconds': video_seconds,
+        'video_error': video_error,
         'videos': get_total_files(paths, type="vid"),
     }
 
