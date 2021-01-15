@@ -30,7 +30,7 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: dist/StudyPlanner.app.zip
-          asset_name: study-planner-macos-x86_64
+          asset_name: study-planner-macos-x86_64.zip
           tag: ${{ github.ref }}
 
   release-windows:
