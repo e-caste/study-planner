@@ -1,0 +1,40 @@
+name: Build and release
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  release-macos:
+    name: Release macOS app
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.6'
+          architecture: x64
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+      - name: Create app with pyinstaller
+        run: pyinstaller --windowed --name "Study Planner" --add-binary 'venv/lib/python3.6/site-packages/pymediainfo/libmediainfo.0.dylib:.' --icon icons/icon_square.png main.py
+      - name: Compress app to archive
+        run: |
+          cd dist
+          zip -r StudyPlanner.app.zip Study\ Planner.app
+          cd ..
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: dist/StudyPlanner.app.zip
+          asset_name: study-planner-macos-x86_64
+          tag: ${{ github.ref }}
+
+  release-windows:
+    runs-on: windows-latest
+
+  release-gnulinux:
+    runs-on: ubuntu-latest
