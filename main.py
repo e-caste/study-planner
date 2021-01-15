@@ -1,11 +1,11 @@
 from pathlib import Path
-from sys import argv, exit as sysexit
+from sys import argv, exit as sysexit, platform
 from typing import List
 
 from PyQt5.QtCore import QRect
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QFileDialog, QHBoxLayout, QVBoxLayout, \
     QPushButton, QFrame, QLineEdit, QDialog, QStackedWidget, QTreeView
-from PyQt5.QtGui import QFont
+from PyQt5.QtGui import QFont, QIcon
 
 from backend import get_result, get_work_amount_analysis
 
@@ -41,7 +41,9 @@ class Window(QMainWindow):
         self.setCentralWidget(welcome)
 
         self.setWindowTitle("Study Planner")
-        # self.setWindowIcon(QIcon("path here")))
+        # on Windows and GNU/Linux
+        if not platform.startswith("darwin"):
+            self.setWindowIcon(QIcon(str(Path.joinpath(Path.cwd(), "icons", "icon_round.ico"))))
 
         self.show()
 
