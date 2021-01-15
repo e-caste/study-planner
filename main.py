@@ -1,5 +1,6 @@
 from pathlib import Path
 from sys import argv, exit as sysexit, platform
+import sys
 from typing import List
 
 from PyQt5.QtCore import QRect
@@ -43,7 +44,11 @@ class Window(QMainWindow):
         self.setWindowTitle("Study Planner")
         # on Windows and GNU/Linux
         if not platform.startswith("darwin"):
-            self.setWindowIcon(QIcon(str(Path.joinpath(Path.cwd(), "icons", "icon_round.ico"))))
+            try:
+                base_path = sys._MEIPASS
+            except AttributeError:
+                base_path = Path.cwd()
+            self.setWindowIcon(QIcon(str(Path.joinpath(base_path, "icons", "icon_round.ico"))))
 
         self.show()
 
