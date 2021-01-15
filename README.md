@@ -19,6 +19,7 @@ A cross-platform GUI to get a quick analysis from files and/or directories in te
 3. Run the application
 
 Some notes on point 3:
+- on Windows, you will have to click "More info" and then "Run anyway" in the blue window that appears the first time you run the app
 - on macOS, you will have to double click the app while holding control, only then you will have the option to "Open" the app
 - on GNU/Linux, if you're using the Nautilus file manager (the default on Ubuntu), you will have to run the app from the terminal since double click does not work properly 
 
