@@ -44,11 +44,12 @@ class Window(QMainWindow):
         self.setWindowTitle("Study Planner")
         # on Windows and GNU/Linux
         if not platform.startswith("darwin"):
-            try:
-                base_path = sys._MEIPASS
-            except AttributeError:
-                base_path = Path.cwd()
-            self.setWindowIcon(QIcon(str(Path.joinpath(base_path, "icons", "icon_round.ico"))))
+            # see https://pyinstaller.readthedocs.io/en/stable/runtime-information.html
+            if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+                base_path = Path(sys._MEIPASS)
+            else:
+                base_path = Path.joinpath(Path.cwd(), "icons")
+            self.setWindowIcon(QIcon(str(Path.joinpath(base_path, "icon_round.ico"))))
 
         self.show()
 
