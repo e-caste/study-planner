@@ -23,7 +23,7 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements-dev.txt
       - name: Create app with pyinstaller
-        run: pyinstaller --windowed --name "Study Planner" --add-binary 'venv/lib/python3.6/site-packages/pymediainfo/libmediainfo.0.dylib:.' --icon icons/icon_square.png main.py
+        run: pyinstaller --windowed --name "Study Planner" --add-binary 'venv/lib/python*/site-packages/pymediainfo/libmediainfo*.dylib:.' --icon icons/icon_square.png main.py
       - name: Compress app to archive
         run: |
           cd dist
@@ -48,10 +48,16 @@ jobs:
         with:
           python-version: '3.6'
           architecture: x64
+      - name: Create and activate venv
+        run: |
+          python -m venv venv
+          venv\Scripts\activate
+        shell: cmd
       - name: Install dependencies
         run: pip install -r requirements-dev.txt
+        shell: cmd
       - name: Create app with pyinstaller
-        run: pyinstaller --windowed --name "Study Planner" --add-data icons;icons --icon icons\icon_round.ico --onefile main.py
+        run: pyinstaller --windowed --name "Study Planner" --add-binary venv\Lib\site-packages\pymediainfo\MediaInfo.dll;. --add-data icons;icons --icon icons\icon_round.ico --onefile main.py
         shell: cmd
       - name: Compress app to archive
         run: |
@@ -77,6 +83,9 @@ jobs:
         with:
           python-version: '3.6'
           architecture: x64
+      # see https://docs.github.com/en/actions/reference/specifications-for-github-hosted-runners#administrative-privileges-of-github-hosted-runners
+      - name: Install libmediainfo package
+        run: sudo apt-get install -y libmediainfo-dev
       - name: Install dependencies
         run: pip install -r requirements-dev.txt
       - name: Create app with pyinstaller
