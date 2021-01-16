@@ -14,7 +14,7 @@ A cross-platform GUI to get a quick analysis from files and/or directories in te
 
 ### How to run
 
-1. Download the latest release for your platform on the right of this page
+1. Download the latest release for your platform on the right of this page or [click here](https://github.com/e-caste/study-planner/releases)
 2. Decompress the archive
 3. Run the application
 
