@@ -16,14 +16,11 @@ jobs:
         with:
           python-version: '3.6'
           architecture: x64
-      - name: Create and activate venv
-        run: |
-          python -m venv venv
-          source venv/bin/activate
       - name: Install dependencies
         run: pip install -r requirements-dev.txt
+      # see https://docs.github.com/en/actions/guides/building-and-testing-python#specifying-a-python-version
       - name: Create app with pyinstaller
-        run: pyinstaller --windowed --name "Study Planner" --add-binary 'venv/lib/python*/site-packages/pymediainfo/libmediainfo*.dylib:.' --icon icons/icon_square.png main.py
+        run: pyinstaller --windowed --name "Study Planner" --add-binary '/Users/runner/hostedtoolcache/Python/3.6.*/x64/lib/python3.6/site-packages/pymediainfo/libmediainfo*.dylib:.' --icon icons/icon_square.png main.py
       - name: Compress app to archive
         run: |
           cd dist
@@ -48,17 +45,12 @@ jobs:
         with:
           python-version: '3.6'
           architecture: x64
-      - name: Create and activate venv
-        run: |
-          python -m venv venv
-          venv\Scripts\activate
-        shell: cmd
       - name: Install dependencies
         run: pip install -r requirements-dev.txt
         shell: cmd
+      # see https://docs.github.com/en/actions/guides/building-and-testing-python#specifying-a-python-version
       - name: Create app with pyinstaller
-        run: pyinstaller --windowed --name "Study Planner" --add-binary venv\Lib\site-packages\pymediainfo\MediaInfo.dll;. --add-data icons;icons --icon icons\icon_round.ico --onefile main.py
-        shell: cmd
+        run: pyinstaller --windowed --name "Study Planner" --add-binary C:\hostedtoolcache\windows\python\3.6.*\x64\lib\site-packages\pymediainfo\MediaInfo.dll;. --add-data icons;icons --icon icons\icon_round.ico --onefile main.py
       - name: Compress app to archive
         run: |
          cd dist
