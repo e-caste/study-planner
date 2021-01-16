@@ -122,7 +122,7 @@ def get_work_amount_analysis(pdf_pages: int,
                      f"At 1.5x it will take you {_human_readable_time(video_seconds / 1.5)} to finish.\n" \
                      f"At 2x it will take you {_human_readable_time(video_seconds / 2)}.\n" \
                      f"Instead, accounting for pauses to take notes (0.75x), it will take you " \
-                     f"{_human_readable_time(video_seconds / 0.75)}."
+                     f"{_human_readable_time(video_seconds / 0.75)}.\n"
 
     if video_error:
         result[1] += "\nIt seems some video files could not be opened correctly, they have been skipped.\n"
