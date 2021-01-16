@@ -196,8 +196,9 @@ class ShowResult(QWidget):
         self.analysis_tot = QLabel(self.analysis[2])
         self.analysis_tot.setWordWrap(True)
 
+        font_height = 15
         title_font = QFont()
-        title_font.setPointSize(15)
+        title_font.setPointSize(font_height)
         title_font.setBold(True)
         self.docs_title = QLabel("Documents")
         self.docs_title.setFont(title_font)
@@ -213,12 +214,12 @@ class ShowResult(QWidget):
         v_box.addWidget(self.vids_title)
         v_box.addWidget(self.analysis_vids)
 
-        height = int(2/3 * self.analysis_docs.height())
+        height = int(2/3 * self.analysis_docs.height() + 2 * font_height)
         if len(self.analysis_tot.text()) > 0:
             v_box.addWidget(HLine())
             v_box.addWidget(self.tot_title)
             v_box.addWidget(self.analysis_tot)
-            height = int(self.analysis_docs.height())
+            height = int(self.analysis_docs.height() + 3 * 2 * font_height)
 
         self.choose_directory_button = QPushButton(BTN_TITLE_TEXT)
         self.choose_directory_button.clicked.connect(lambda: show_file_dialog())
