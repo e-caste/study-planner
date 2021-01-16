@@ -222,7 +222,7 @@ class ShowResult(QWidget):
 
         self.choose_directory_button = QPushButton(BTN_TITLE_TEXT)
         self.choose_directory_button.clicked.connect(lambda: show_file_dialog())
-        height += 10
+        height += 20
 
         h_box = QHBoxLayout()
         h_box.addStretch()
@@ -236,13 +236,15 @@ class ShowResult(QWidget):
         window.setCentralWidget(self)
 
         # height = 160 * number_of_widgets
-        window.resize(window.width() + 50, height + 10)
+        window.resize(width, height)
 
 
 def main():
     app = QApplication(argv)
     global window
     window = Window()
+    global width
+    width = window.width()
     sysexit(app.exec_())
 
 
