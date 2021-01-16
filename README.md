@@ -9,7 +9,7 @@ A cross-platform GUI to get a quick analysis from files and/or directories in te
 <p align="center">
   <img max-height="150" src="readme/windows_screenshot.png" alt="Windows">
   <img max-height="400" src="readme/ubuntu_screenshot.png" alt="Ubuntu">
-  <img max-height="500" src="readme/mac_screeshot.png" alt="macOS">
+  <img max-height="500" src="readme/mac_screenshot.png" alt="macOS">
 </p>
 
 ### How to run
