@@ -31,7 +31,7 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: dist/StudyPlanner.app.zip
-          asset_name: study-planner-macos-x86_64_$tag.zip
+          asset_name: study-planner-macos-x86_64-$tag.zip
           tag: ${{ github.ref }}
 
   release-windows:
@@ -62,7 +62,7 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: dist\StudyPlanner.zip
-          asset_name: study-planner-windows-x86_64_$tag.zip
+          asset_name: study-planner-windows-x86_64-$tag.zip
           tag: ${{ github.ref }}
 
   release-gnulinux:
@@ -93,5 +93,5 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: dist/StudyPlanner.tar.gz
-          asset_name: study-planner-gnulinux-x86_64_$tag.tar.gz
+          asset_name: study-planner-gnulinux-x86_64-$tag.tar.gz
           tag: ${{ github.ref }}
