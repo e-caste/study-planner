@@ -6,7 +6,7 @@ A cross-platform GUI to get a quick analysis from files and/or directories in te
 
 <p align="center">
     <a href="https://github.com/e-caste/study-planner/releases">
-        <img max-height="100" src="readme/download_button.png" alt="Download latest release">
+        <img max-height="40" src="readme/download_button.png" alt="Download latest release">
     </a>
 </p>
 
