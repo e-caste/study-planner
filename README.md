@@ -5,6 +5,12 @@
 A cross-platform GUI to get a quick analysis from files and/or directories in terms of required time to study their contents
 
 <p align="center">
+    <a href="https://github.com/e-caste/study-planner/releases">
+        <img max-height="150" src="readme/download_button.png" alt="Download latest release">
+    </a>
+</p>
+
+<p align="center">
   <img max-height="150" src="readme/windows_screenshot.png" alt="Windows">
   <img max-height="400" src="readme/ubuntu_screenshot.png" alt="Ubuntu">
   <img max-height="500" src="readme/mac_screenshot.png" alt="macOS">
