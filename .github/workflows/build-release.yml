@@ -14,7 +14,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.6'
+          python-version: '3.9'
           architecture: x64
       - name: Install dependencies
         run: pip install -r requirements-dev.txt
@@ -43,14 +43,14 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.6.8'
+          python-version: '3.9.0'
           architecture: x64
       - name: Install dependencies
         run: pip install -r requirements-dev.txt
         shell: cmd
       # see https://docs.github.com/en/actions/guides/building-and-testing-python#specifying-a-python-version
       - name: Create app with pyinstaller
-        run: pyinstaller --windowed --name "Study Planner" --add-binary C:\hostedtoolcache\windows\python\3.6.8\x64\lib\site-packages\pymediainfo\MediaInfo.dll;. --add-data icons;icons --icon icons\icon_round.ico --onefile main.py
+        run: pyinstaller --windowed --name "Study Planner" --add-binary C:\hostedtoolcache\windows\python\3.9.0\x64\lib\site-packages\pymediainfo\MediaInfo.dll;. --add-data icons;icons --icon icons\icon_round.ico --onefile main.py
         shell: cmd
       - name: Compress app to archive
         run: |
@@ -74,7 +74,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.6'
+          python-version: '3.9'
           architecture: x64
       # see https://docs.github.com/en/actions/reference/specifications-for-github-hosted-runners#administrative-privileges-of-github-hosted-runners
       - name: Install libmediainfo package
