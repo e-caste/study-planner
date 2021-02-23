@@ -54,7 +54,7 @@ def get_total_pdf_pages(paths: List[str]) -> Tuple[int, bool]:
                 total_pages += PdfFileReader(open(path, 'rb'), strict=False).getNumPages()
             elif Path(path).is_dir():
                 for f in Path(path).rglob("*.pdf"):
-                        total_pages += PdfFileReader(open(f, 'rb'), strict=False).getNumPages()
+                    total_pages += PdfFileReader(open(f, 'rb'), strict=False).getNumPages()
         except (PdfReadError, Exception) as e:
             print(e)
             error = True
@@ -133,7 +133,7 @@ def get_work_amount_analysis(pdf_pages: int,
                      f"Going very fast (20 seconds per page, watching videos at 2x) will take you " \
                      f"{_human_readable_time(pdf_pages * 20 + video_seconds / 2)}.\n" \
                      f"Taking your time to master the subject (2 minutes per page, watching videos at 0.75x) will take you " \
-                     f"{_human_readable_time(pdf_pages * 120 + video_seconds / 0.75)}."
+                     f"{_human_readable_time(pdf_pages * 120 + video_seconds / 0.75)}.\n"
 
     # add second space after comma so that UI displays correctly
     return [text.replace(", ", ",  ") for text in result]
