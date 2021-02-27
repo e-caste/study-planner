@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QFileDia
 from PyQt5.QtGui import QFont, QIcon
 
 from backend import get_result, get_work_amount_analysis
+from waiting_spinner_widget import QtWaitingSpinner
 
 DB_PATH = Path.joinpath(Path.home(), '.study_planner')
 DB_FILE = str(Path.joinpath(DB_PATH, '_study_planner_db.txt'))
@@ -151,14 +152,24 @@ class LoadingScreen(QWidget):
     def __init__(self):
         super().__init__()
         self.loading_text = QLabel("Loading...")
-        # TODO: add spinner from https://github.com/snowwlex/QtWaitingSpinner
-        # self.loading_spinner = QtWaitingSpinner()
-        h_box = QHBoxLayout()
-        h_box.addStretch()
-        h_box.addWidget(self.loading_text)
-        h_box.addStretch()
-        self.setLayout(h_box)
+        self.loading_spinner = QtWaitingSpinner(parent=self)
 
+        v_box = QVBoxLayout()
+
+        # h_box_text = QHBoxLayout()
+        # h_box_text.addStretch()
+        # h_box_text.addWidget(self.loading_text)
+        # h_box_text.addStretch()
+
+        h_box_spinner = QHBoxLayout()
+        h_box_spinner.addStretch()
+        h_box_spinner.addWidget(self.loading_spinner)
+        h_box_spinner.addStretch()
+
+        # v_box.addLayout(h_box_text)
+        v_box.addLayout(h_box_spinner)
+        self.setLayout(v_box)
+        self.loading_spinner.start()
         window.takeCentralWidget()
         window.setCentralWidget(self)
 
