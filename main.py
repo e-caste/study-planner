@@ -38,8 +38,12 @@ def set_last_dir(last_dir: str):
 class Analyser(QThread):
     analysis_signal = pyqtSignal(list)  # List[str]
 
+    def __init__(self, paths: List[str]):
+        QThread.__init__(self)
+        self.paths = paths
+
     def run(self):
-        self.analysis_signal.emit(get_analysis(paths))
+        self.analysis_signal.emit(get_analysis(self.paths))
 
 
 class Window(QMainWindow):
@@ -93,7 +97,7 @@ class Welcome(QWidget):
 
 
 class LoadingScreen(QVBoxLayout):
-    def __init__(self, show_spinner: bool = False):
+    def __init__(self, show_spinner: bool = True):
         super().__init__()
         self.loading_text = QLabel("Waiting for you to choose some files or directories...")
         self.loading_spinner = QtWaitingSpinner()
@@ -173,7 +177,6 @@ class FileDialog(QWidget):
         self.show_result_widget()
 
     def show_result_widget(self):
-        global paths
         paths = get_open_files_and_dirs(caption=BTN_TITLE_TEXT,
                                         directory=self.last_dir)
         if not paths:
@@ -206,27 +209,11 @@ def get_analysis(paths: List[str]):
     return analysis
 
 
-# class Analyser(QThread):
-#     analysis_signal = pyqtSignal(list)
-#
-#     def __init__(self, paths: List[str], parent=None):
-#         QThread.__init__(self, parent)
-#         self.running = False
-#         self.paths = paths
-#
-#     def run(self):
-#         self.running = True
-#         while self.running:
-#             self.analysis_signal.emit(get_analysis(self.paths))
-#         # else:
-#         #     self.analysis_signal.emit("There was an error getting back the required information. Try again?")
-
-
 class ShowResult(QWidget):
     def __init__(self, paths: List[str]):
         # noinspection PyArgumentList
         super().__init__()
-        self.analyser = Analyser()
+        self.analyser = Analyser(paths)
         self.loading_screen = LoadingScreen(show_spinner=True)
 
         self.get_analysis_threaded()
