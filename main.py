@@ -2,8 +2,11 @@ from pathlib import Path
 from sys import argv, exit as sysexit, platform
 import sys
 from typing import List
+import traceback
+from threading import Thread
+from queue import Queue
 
-from PyQt5.QtCore import QRect
+from PyQt5.QtCore import QRect, QRunnable, pyqtSignal, pyqtSlot, QObject, QThreadPool, QThread
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QFileDialog, QHBoxLayout, QVBoxLayout, \
     QPushButton, QFrame, QLineEdit, QDialog, QStackedWidget, QTreeView
 from PyQt5.QtGui import QFont, QIcon
@@ -32,6 +35,13 @@ def set_last_dir(last_dir: str):
         f.write(last_dir.strip())
 
 
+class Analyser(QThread):
+    analysis_signal = pyqtSignal(list)  # List[str]
+
+    def run(self):
+        self.analysis_signal.emit(get_analysis(paths))
+
+
 class Window(QMainWindow):
     def __init__(self):
         # noinspection PyArgumentList
@@ -55,6 +65,10 @@ class Window(QMainWindow):
         self.show()
 
 
+# def show_file_dialog(widget):
+#     containing_layout = widget.parent().layout()
+#     containing_layout.replaceWidget(widget, FileDialog(last_dir=get_last_dir()))
+
 def show_file_dialog():
     FileDialog(last_dir=get_last_dir())
 
@@ -76,6 +90,27 @@ class Welcome(QWidget):
         h_box.addStretch()
         v_box.addLayout(h_box)
         self.setLayout(v_box)
+
+
+class LoadingScreen(QVBoxLayout):
+    def __init__(self, show_spinner: bool = False):
+        super().__init__()
+        self.loading_text = QLabel("Waiting for you to choose some files or directories...")
+        self.loading_spinner = QtWaitingSpinner()
+
+        if show_spinner:
+            h_box_spinner = QHBoxLayout()
+            h_box_spinner.addStretch()
+            h_box_spinner.addWidget(self.loading_spinner)
+            h_box_spinner.addStretch()
+            self.addLayout(h_box_spinner)
+            self.loading_spinner.start()
+        else:
+            h_box_text = QHBoxLayout()
+            h_box_text.addStretch()
+            h_box_text.addWidget(self.loading_text)
+            h_box_text.addStretch()
+            self.addLayout(h_box_text)
 
 
 # see https://stackoverflow.com/a/64340482
@@ -133,10 +168,12 @@ class FileDialog(QWidget):
         self.title = BTN_TITLE_TEXT
         self.last_dir = last_dir
 
+        # TODO: fix this is not shown
+        self.setLayout(LoadingScreen(show_spinner=False))
         self.show_result_widget()
 
     def show_result_widget(self):
-        LoadingScreen()
+        global paths
         paths = get_open_files_and_dirs(caption=BTN_TITLE_TEXT,
                                         directory=self.last_dir)
         if not paths:
@@ -145,33 +182,8 @@ class FileDialog(QWidget):
         else:
             print(paths, str(Path(paths[0]).parent))
             set_last_dir(str(Path(paths[0]).parent))
-            ShowResult(paths)
-
-
-class LoadingScreen(QWidget):
-    def __init__(self):
-        super().__init__()
-        self.loading_text = QLabel("Loading...")
-        self.loading_spinner = QtWaitingSpinner(parent=self)
-
-        v_box = QVBoxLayout()
-
-        # h_box_text = QHBoxLayout()
-        # h_box_text.addStretch()
-        # h_box_text.addWidget(self.loading_text)
-        # h_box_text.addStretch()
-
-        h_box_spinner = QHBoxLayout()
-        h_box_spinner.addStretch()
-        h_box_spinner.addWidget(self.loading_spinner)
-        h_box_spinner.addStretch()
-
-        # v_box.addLayout(h_box_text)
-        v_box.addLayout(h_box_spinner)
-        self.setLayout(v_box)
-        self.loading_spinner.start()
-        window.takeCentralWidget()
-        window.setCentralWidget(self)
+            window.takeCentralWidget()
+            window.setCentralWidget(ShowResult(paths))
 
 
 class HLine(QFrame):
@@ -194,55 +206,88 @@ def get_analysis(paths: List[str]):
     return analysis
 
 
+# class Analyser(QThread):
+#     analysis_signal = pyqtSignal(list)
+#
+#     def __init__(self, paths: List[str], parent=None):
+#         QThread.__init__(self, parent)
+#         self.running = False
+#         self.paths = paths
+#
+#     def run(self):
+#         self.running = True
+#         while self.running:
+#             self.analysis_signal.emit(get_analysis(self.paths))
+#         # else:
+#         #     self.analysis_signal.emit("There was an error getting back the required information. Try again?")
+
+
 class ShowResult(QWidget):
     def __init__(self, paths: List[str]):
         # noinspection PyArgumentList
         super().__init__()
+        self.analyser = Analyser()
+        self.loading_screen = LoadingScreen(show_spinner=True)
 
-        self.analysis = get_analysis(paths)
-        self.analysis_docs = QLabel(self.analysis[0])
-        self.analysis_docs.setWordWrap(True)
-        self.analysis_vids = QLabel(self.analysis[1])
-        self.analysis_vids.setWordWrap(True)
-        self.analysis_tot = QLabel(self.analysis[2])
-        self.analysis_tot.setWordWrap(True)
+        self.get_analysis_threaded()
+        self.show_loading_screen()
+
+    def show_loading_screen(self):
+        self.setLayout(self.loading_screen)
+
+    def get_analysis_threaded(self):
+        self.analyser.analysis_signal.connect(self.init_ui)
+        self.analyser.start()
+
+    # https://stackoverflow.com/a/10439207
+    def replace_layout(self, new_layout):
+        QWidget().setLayout(self.layout())
+        self.setLayout(new_layout)
+
+    def init_ui(self, analysis):
+        analysis_docs = QLabel(analysis[0])
+        analysis_docs.setWordWrap(True)
+        analysis_vids = QLabel(analysis[1])
+        analysis_vids.setWordWrap(True)
+        analysis_tot = QLabel(analysis[2])
+        analysis_tot.setWordWrap(True)
 
         font_height = 15
         title_font = QFont()
         title_font.setPointSize(font_height)
         title_font.setBold(True)
-        self.docs_title = QLabel("Documents")
-        self.docs_title.setFont(title_font)
-        self.vids_title = QLabel("Videos")
-        self.vids_title.setFont(title_font)
-        self.tot_title = QLabel("Total")
-        self.tot_title.setFont(title_font)
+        docs_title = QLabel("Documents")
+        docs_title.setFont(title_font)
+        vids_title = QLabel("Videos")
+        vids_title.setFont(title_font)
+        tot_title = QLabel("Total")
+        tot_title.setFont(title_font)
 
         v_box = QVBoxLayout()
-        v_box.addWidget(self.docs_title)
-        v_box.addWidget(self.analysis_docs)
+        v_box.addWidget(docs_title)
+        v_box.addWidget(analysis_docs)
         v_box.addWidget(HLine())
-        v_box.addWidget(self.vids_title)
-        v_box.addWidget(self.analysis_vids)
+        v_box.addWidget(vids_title)
+        v_box.addWidget(analysis_vids)
 
-        height = int(2/3 * self.analysis_docs.height() + 2 * font_height)
-        if len(self.analysis_tot.text()) > 0:
+        height = int(2/3 * analysis_docs.height() + 2 * font_height)
+        if len(analysis_tot.text()) > 0:
             v_box.addWidget(HLine())
-            v_box.addWidget(self.tot_title)
-            v_box.addWidget(self.analysis_tot)
-            height = int(self.analysis_docs.height() + 3 * 2 * font_height)
+            v_box.addWidget(tot_title)
+            v_box.addWidget(analysis_tot)
+            height = int(analysis_docs.height() + 3 * 2 * font_height)
 
-        self.choose_directory_button = QPushButton(BTN_TITLE_TEXT)
-        self.choose_directory_button.clicked.connect(lambda: show_file_dialog())
+        choose_directory_button = QPushButton(BTN_TITLE_TEXT)
+        choose_directory_button.clicked.connect(lambda: show_file_dialog())
         height += 20
 
         h_box = QHBoxLayout()
         h_box.addStretch()
-        h_box.addWidget(self.choose_directory_button)
+        h_box.addWidget(choose_directory_button)
         h_box.addStretch()
         v_box.addLayout(h_box)
 
-        self.setLayout(v_box)
+        self.replace_layout(v_box)
 
         window.takeCentralWidget()
         window.setCentralWidget(self)
