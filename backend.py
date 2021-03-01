@@ -1,6 +1,8 @@
 from sys import stderr
 from pathlib import Path
 from typing import Tuple, List
+from threading import Thread
+from queue import Queue
 
 from PyPDF2 import PdfFileReader
 from PyPDF2.utils import PdfReadError
@@ -45,19 +47,35 @@ def get_total_files(paths: List[str], type: str) -> int:
     return tot
 
 
+def _get_thread_pdf_pages(path: str) -> Tuple[int, bool]:
+    pages, error = 0, False
+    try:
+        if Path(path).is_file() and path.endswith(".pdf"):
+            pages += PdfFileReader(open(path, 'rb'), strict=False).getNumPages()
+        elif Path(path).is_dir():
+            for f in Path(path).rglob("*.pdf"):
+                pages += PdfFileReader(open(f, 'rb'), strict=False).getNumPages()
+    except (PdfReadError, Exception) as e:
+        print(e)
+        error = True
+    return pages, error
+
+
 def get_total_pdf_pages(paths: List[str]) -> Tuple[int, bool]:
-    total_pages = 0
-    error = False
+    total_pages, error = 0, False
+    threads = []
+    # https://stackoverflow.com/a/36926134
+    queue = Queue()
     for path in paths:
-        try:
-            if Path(path).is_file() and path.endswith(".pdf"):
-                total_pages += PdfFileReader(open(path, 'rb'), strict=False).getNumPages()
-            elif Path(path).is_dir():
-                for f in Path(path).rglob("*.pdf"):
-                    total_pages += PdfFileReader(open(f, 'rb'), strict=False).getNumPages()
-        except (PdfReadError, Exception) as e:
-            print(e)
-            error = True
+        threads.append(Thread(target=lambda q, arg: q.put(_get_thread_pdf_pages(arg)), args=(queue, path)))
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+    for _ in range(len(threads)):
+        pages, err = queue.get()  # this is blocking -> corresponds to await
+        total_pages += pages
+        error |= err
     return total_pages, error
 
 
