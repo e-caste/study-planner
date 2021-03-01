@@ -48,6 +48,35 @@ def _get_thread_vid_files(path: str) -> int:
     return tot
 
 
+def _get_thread_pdf_pages(path: str) -> Tuple[int, bool]:
+    pages, error = 0, False
+    try:
+        if Path(path).is_file() and path.endswith(".pdf"):
+            pages += PdfFileReader(open(path, 'rb'), strict=False).getNumPages()
+        elif Path(path).is_dir():
+            for f in Path(path).rglob("*.pdf"):
+                pages += PdfFileReader(open(f, 'rb'), strict=False).getNumPages()
+    except (PdfReadError, Exception) as e:
+        print(e)
+        error = True
+    return pages, error
+
+
+def _get_thread_video_seconds(path: str) -> Tuple[float, bool]:
+    seconds, error = 0., False
+    try:
+        if Path(path).is_file() and _is_video_file(path):
+            seconds += MediaInfo.parse(path).tracks[0].duration
+        elif Path(path).is_dir():
+            for ext in video_exts:
+                for f in Path(path).rglob(f"*{ext}"):
+                    seconds += MediaInfo.parse(f).tracks[0].duration
+    except (FileNotFoundError, IOError, RuntimeError, Exception) as e:
+        print(e)
+        error = True
+    return seconds, error
+
+
 def run_multithreaded(paths: List[str], callback: Callable, **kwargs):
     total, error, return_tuple = 0., False, False
     threads = []
@@ -82,37 +111,8 @@ def get_total_files(paths: List[str], type: str) -> int:
         return run_multithreaded(paths, _get_thread_vid_files)
 
 
-def _get_thread_pdf_pages(path: str) -> Tuple[int, bool]:
-    pages, error = 0, False
-    try:
-        if Path(path).is_file() and path.endswith(".pdf"):
-            pages += PdfFileReader(open(path, 'rb'), strict=False).getNumPages()
-        elif Path(path).is_dir():
-            for f in Path(path).rglob("*.pdf"):
-                pages += PdfFileReader(open(f, 'rb'), strict=False).getNumPages()
-    except (PdfReadError, Exception) as e:
-        print(e)
-        error = True
-    return pages, error
-
-
 def get_total_pdf_pages(paths: List[str]) -> Tuple[int, bool]:
     return run_multithreaded(paths, _get_thread_pdf_pages)
-
-
-def _get_thread_video_seconds(path: str) -> Tuple[float, bool]:
-    seconds, error = 0., False
-    try:
-        if Path(path).is_file() and _is_video_file(path):
-            seconds += MediaInfo.parse(path).tracks[0].duration
-        elif Path(path).is_dir():
-            for ext in video_exts:
-                for f in Path(path).rglob(f"*{ext}"):
-                    seconds += MediaInfo.parse(f).tracks[0].duration
-    except (FileNotFoundError, IOError, RuntimeError, Exception) as e:
-        print(e)
-        error = True
-    return seconds, error
 
 
 def get_total_video_seconds(paths: List[str]) -> Tuple[float, bool]:
