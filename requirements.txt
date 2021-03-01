@@ -3,7 +3,8 @@ importlib-metadata==3.5.0
 macholib==1.14
 pymediainfo==5.0.3
 PyPDF2==1.26.0
-PyQt5==5.15.2
+PyQt5==5.15.3
+PyQt5-Qt==5.15.2
 PyQt5-sip==12.8.1
 typing-extensions==3.7.4.3
 zipp==3.4.0
