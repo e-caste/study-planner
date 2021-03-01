@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QFileDia
     QPushButton, QFrame, QLineEdit, QDialog, QStackedWidget, QTreeView
 from PyQt5.QtGui import QFont, QIcon
 
-from backend import get_result, get_work_amount_analysis
+from backend import get_analysis
 from waiting_spinner_widget import QtWaitingSpinner
 
 DB_PATH = Path.joinpath(Path.home(), '.study_planner')
@@ -193,17 +193,6 @@ class HLine(QFrame):
         self.setGeometry(QRect(320, 150, 118, 3))
         self.setFrameShape(QFrame.HLine)
         self.setFrameShadow(QFrame.Sunken)
-
-
-def get_analysis(paths: List[str]):
-    result = get_result(paths)
-    analysis = get_work_amount_analysis(result['pdf_pages'],
-                                        result['pdf_error'],
-                                        result['pdf_documents'],
-                                        result['video_seconds'],
-                                        result['video_error'],
-                                        result['videos'])
-    return analysis
 
 
 class ShowResult(QWidget):

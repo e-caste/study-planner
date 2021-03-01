@@ -137,3 +137,14 @@ def get_work_amount_analysis(pdf_pages: int,
 
     # add second space after comma so that UI displays correctly
     return [text.replace(", ", ",  ") for text in result]
+
+
+def get_analysis(paths: List[str]):
+    result = get_result(paths)
+    analysis = get_work_amount_analysis(result['pdf_pages'],
+                                        result['pdf_error'],
+                                        result['pdf_documents'],
+                                        result['video_seconds'],
+                                        result['video_error'],
+                                        result['videos'])
+    return analysis
