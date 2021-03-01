@@ -2,7 +2,7 @@ from sys import stderr
 from pathlib import Path
 from typing import Tuple, List
 from threading import Thread
-from queue import Queue
+from queue import Queue  # https://stackoverflow.com/a/36926134
 
 from PyPDF2 import PdfFileReader
 from PyPDF2.utils import PdfReadError
@@ -29,21 +29,36 @@ def _is_video_file(path: str) -> bool:
     return any([path.endswith(ext) for ext in video_exts])
 
 
-def get_total_files(paths: List[str], type: str) -> int:
+def _get_thread_files(path: str, type: str) -> int:
     tot = 0
     if type == "doc":
-        for path in paths:
-            if Path(path).is_file():
-                tot += 1
-            elif Path(path).is_dir():
-                tot += len(list(Path(path).rglob("*.pdf")))
+        if Path(path).is_file():
+            tot += 1
+        elif Path(path).is_dir():
+            tot += len(list(Path(path).rglob("*.pdf")))
     elif type == "vid":
-        for path in paths:
-            if Path(path).is_file() and _is_video_file(path):
-                tot += 1
-            elif Path(path).is_dir():
-                for ext in video_exts:
-                    tot += len(list(Path(path).rglob(f"*{ext}")))
+        if Path(path).is_file() and _is_video_file(path):
+            tot += 1
+        elif Path(path).is_dir():
+            for ext in video_exts:
+                tot += len(list(Path(path).rglob(f"*{ext}")))
+    return tot
+
+
+def get_total_files(paths: List[str], type: str) -> int:
+    tot = 0
+    threads = []
+    queue = Queue()
+    if len(paths) == 1 and Path(paths[0]).is_dir():  # go one level deeper
+        paths = [str(p) for p in Path(paths[0]).glob("*")]
+    for path in paths:
+        threads.append(Thread(target=lambda q, arg1, arg2: q.put(_get_thread_files(arg1, arg2)), args=(queue, path, type)))
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+    for _ in range(len(threads)):
+        tot += queue.get()
     return tot
 
 
@@ -64,7 +79,6 @@ def _get_thread_pdf_pages(path: str) -> Tuple[int, bool]:
 def get_total_pdf_pages(paths: List[str]) -> Tuple[int, bool]:
     total_pages, error = 0, False
     threads = []
-    # https://stackoverflow.com/a/36926134
     queue = Queue()
     if len(paths) == 1 and Path(paths[0]).is_dir():  # go one level deeper
         paths = [str(p) for p in Path(paths[0]).glob("*")]
