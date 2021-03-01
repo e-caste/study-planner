@@ -35,8 +35,8 @@ from PyQt5.QtWidgets import *
 
 
 class QtWaitingSpinner(QWidget):
-    def __init__(self, parent, centerOnParent=True, disableParentWhenSpinning=False, modality=Qt.NonModal):
-        super().__init__(parent)
+    def __init__(self, centerOnParent=True, disableParentWhenSpinning=False, modality=Qt.NonModal):
+        super().__init__()
 
         self._centerOnParent = centerOnParent
         self._disableParentWhenSpinning = disableParentWhenSpinning
