@@ -2,11 +2,8 @@ from pathlib import Path
 from sys import argv, exit as sysexit, platform
 import sys
 from typing import List
-import traceback
-from threading import Thread
-from queue import Queue
 
-from PyQt5.QtCore import QRect, QRunnable, pyqtSignal, pyqtSlot, QObject, QThreadPool, QThread
+from PyQt5.QtCore import QRect, pyqtSignal, QThread
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QFileDialog, QHBoxLayout, QVBoxLayout, \
     QPushButton, QFrame, QLineEdit, QDialog, QStackedWidget, QTreeView
 from PyQt5.QtGui import QFont, QIcon
