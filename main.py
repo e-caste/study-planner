@@ -2,6 +2,7 @@ from pathlib import Path
 from sys import argv, exit as sysexit, platform
 import sys
 from typing import List
+from time import time
 
 from PyQt5.QtCore import QRect, pyqtSignal, QThread
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QFileDialog, QHBoxLayout, QVBoxLayout, \
@@ -40,7 +41,9 @@ class Analyser(QThread):
         self.paths = paths
 
     def run(self):
+        start = time()
         self.analysis_signal.emit(get_analysis(self.paths))
+        print(f"Time taken to analyse the following paths:\n{self.paths}\n--> {time() - start} s")
 
 
 class Window(QMainWindow):
