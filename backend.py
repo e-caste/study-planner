@@ -1,6 +1,6 @@
 from sys import stderr
 from pathlib import Path
-from typing import Tuple, List
+from typing import Tuple, List, Callable
 from threading import Thread
 from queue import Queue  # https://stackoverflow.com/a/36926134
 
@@ -29,37 +29,55 @@ def _is_video_file(path: str) -> bool:
     return any([path.endswith(ext) for ext in video_exts])
 
 
-def _get_thread_files(path: str, type: str) -> int:
+def _get_thread_doc_files(path: str) -> int:
     tot = 0
-    if type == "doc":
-        if Path(path).is_file():
-            tot += 1
-        elif Path(path).is_dir():
-            tot += len(list(Path(path).rglob("*.pdf")))
-    elif type == "vid":
-        if Path(path).is_file() and _is_video_file(path):
-            tot += 1
-        elif Path(path).is_dir():
-            for ext in video_exts:
-                tot += len(list(Path(path).rglob(f"*{ext}")))
+    if Path(path).is_file():
+        tot += 1
+    elif Path(path).is_dir():
+        tot += len(list(Path(path).rglob("*.pdf")))
     return tot
 
 
-def get_total_files(paths: List[str], type: str) -> int:
+def _get_thread_vid_files(path: str) -> int:
     tot = 0
+    if Path(path).is_file() and _is_video_file(path):
+        tot += 1
+    elif Path(path).is_dir():
+        for ext in video_exts:
+            tot += len(list(Path(path).rglob(f"*{ext}")))
+    return tot
+
+
+def run_multithreaded(paths: List[str], callback: Callable, **kwargs):
+    total, error, return_tuple = 0., False, False
     threads = []
     queue = Queue()
     if len(paths) == 1 and Path(paths[0]).is_dir():  # go one level deeper
         paths = [str(p) for p in Path(paths[0]).glob("*")]
     for path in paths:
-        threads.append(Thread(target=lambda q, arg1, arg2: q.put(_get_thread_files(arg1, arg2)), args=(queue, path, type)))
+        threads.append(Thread(target=lambda q, func, p: q.put(func(p)), args=(queue, callback, path)))
     for thread in threads:
         thread.start()
     for thread in threads:
         thread.join()
     for _ in range(len(threads)):
-        tot += queue.get()
-    return tot
+        res = queue.get()  # this is blocking, like await
+        if isinstance(res, tuple):
+            total += res[0]
+            error |= res[1]
+            return_tuple = True
+        else:
+            total += res
+    if total == int(total):  # 1.0 == 1 but 1.2 != 1
+        total = int(total)  # cast to int
+    return (total, error) if return_tuple else total
+
+
+def get_total_files(paths: List[str], type: str) -> int:
+    if type == "doc":
+        return run_multithreaded(paths, _get_thread_doc_files)
+    elif type == "vid":
+        return run_multithreaded(paths, _get_thread_vid_files)
 
 
 def _get_thread_pdf_pages(path: str) -> Tuple[int, bool]:
@@ -77,22 +95,7 @@ def _get_thread_pdf_pages(path: str) -> Tuple[int, bool]:
 
 
 def get_total_pdf_pages(paths: List[str]) -> Tuple[int, bool]:
-    total_pages, error = 0, False
-    threads = []
-    queue = Queue()
-    if len(paths) == 1 and Path(paths[0]).is_dir():  # go one level deeper
-        paths = [str(p) for p in Path(paths[0]).glob("*")]
-    for path in paths:
-        threads.append(Thread(target=lambda q, arg: q.put(_get_thread_pdf_pages(arg)), args=(queue, path)))
-    for thread in threads:
-        thread.start()
-    for thread in threads:
-        thread.join()
-    for _ in range(len(threads)):
-        pages, err = queue.get()  # this is blocking -> corresponds to await
-        total_pages += pages
-        error |= err
-    return total_pages, error
+    return run_multithreaded(paths, _get_thread_pdf_pages)
 
 
 def _get_thread_video_seconds(path: str) -> Tuple[float, bool]:
@@ -111,22 +114,7 @@ def _get_thread_video_seconds(path: str) -> Tuple[float, bool]:
 
 
 def get_total_video_seconds(paths: List[str]) -> Tuple[float, bool]:
-    total_seconds, error = 0., False
-    threads = []
-    queue = Queue()
-    if len(paths) == 1 and Path(paths[0]).is_dir():  # go one level deeper
-        paths = [str(p) for p in Path(paths[0]).glob("*")]
-    for path in paths:
-        threads.append(Thread(target=lambda q, arg: q.put(_get_thread_video_seconds(arg)), args=(queue, path)))
-    for thread in threads:
-        thread.start()
-    for thread in threads:
-        thread.join()
-    for _ in range(len(threads)):
-        seconds, err = queue.get()
-        total_seconds += seconds
-        error |= err
-    return total_seconds / 1000, error
+    return run_multithreaded(paths, _get_thread_video_seconds)
 
 
 def get_result(paths: List[str]) -> dict:
@@ -136,7 +124,7 @@ def get_result(paths: List[str]) -> dict:
         'pdf_pages': pdf_pages,
         'pdf_error': pdf_error,
         'pdf_documents': get_total_files(paths, type="doc"),
-        'video_seconds': video_seconds,
+        'video_seconds': video_seconds / 1000,
         'video_error': video_error,
         'videos': get_total_files(paths, type="vid"),
     }
