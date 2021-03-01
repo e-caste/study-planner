@@ -53,7 +53,9 @@ def run_multithreaded(paths: List[str], callback: Callable, **kwargs):
     threads = []
     queue = Queue()
     if len(paths) == 1 and Path(paths[0]).is_dir():  # go one level deeper
-        paths = [str(p) for p in Path(paths[0]).glob("*")]
+        _paths = list(Path(paths[0]).glob("*"))
+        if _paths:  # prevent crash for empty dirs
+            paths = [str(p) for p in _paths]
     for path in paths:
         threads.append(Thread(target=lambda q, func, p: q.put(func(p)), args=(queue, callback, path)))
     for thread in threads:
