@@ -66,6 +66,8 @@ def get_total_pdf_pages(paths: List[str]) -> Tuple[int, bool]:
     threads = []
     # https://stackoverflow.com/a/36926134
     queue = Queue()
+    if len(paths) == 1 and Path(paths[0]).is_dir():  # go one level deeper
+        paths = [str(p) for p in Path(paths[0]).glob("*")]
     for path in paths:
         threads.append(Thread(target=lambda q, arg: q.put(_get_thread_pdf_pages(arg)), args=(queue, path)))
     for thread in threads:
@@ -98,6 +100,8 @@ def get_total_video_seconds(paths: List[str]) -> Tuple[float, bool]:
     total_seconds, error = 0., False
     threads = []
     queue = Queue()
+    if len(paths) == 1 and Path(paths[0]).is_dir():  # go one level deeper
+        paths = [str(p) for p in Path(paths[0]).glob("*")]
     for path in paths:
         threads.append(Thread(target=lambda q, arg: q.put(_get_thread_video_seconds(arg)), args=(queue, path)))
     for thread in threads:
