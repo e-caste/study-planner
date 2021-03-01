@@ -79,20 +79,35 @@ def get_total_pdf_pages(paths: List[str]) -> Tuple[int, bool]:
     return total_pages, error
 
 
+def _get_thread_video_seconds(path: str) -> Tuple[float, bool]:
+    seconds, error = 0., False
+    try:
+        if Path(path).is_file() and _is_video_file(path):
+            seconds += MediaInfo.parse(path).tracks[0].duration
+        elif Path(path).is_dir():
+            for ext in video_exts:
+                for f in Path(path).rglob(f"*{ext}"):
+                    seconds += MediaInfo.parse(f).tracks[0].duration
+    except (FileNotFoundError, IOError, RuntimeError, Exception) as e:
+        print(e)
+        error = True
+    return seconds, error
+
+
 def get_total_video_seconds(paths: List[str]) -> Tuple[float, bool]:
-    total_seconds = 0.
-    error = False
+    total_seconds, error = 0., False
+    threads = []
+    queue = Queue()
     for path in paths:
-        try:
-            if Path(path).is_file() and _is_video_file(path):
-                total_seconds += MediaInfo.parse(path).tracks[0].duration
-            elif Path(path).is_dir():
-                for ext in video_exts:
-                    for f in Path(path).rglob(f"*{ext}"):
-                        total_seconds += MediaInfo.parse(f).tracks[0].duration
-        except (FileNotFoundError, IOError, RuntimeError, Exception) as e:
-            print(e)
-            error = True
+        threads.append(Thread(target=lambda q, arg: q.put(_get_thread_video_seconds(arg)), args=(queue, path)))
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+    for _ in range(len(threads)):
+        seconds, err = queue.get()
+        total_seconds += seconds
+        error |= err
     return total_seconds / 1000, error
 
 
