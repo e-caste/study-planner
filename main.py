@@ -274,10 +274,12 @@ class ShowResult(QWidget):
         h_box_docs = QHBoxLayout()
         h_box_docs.addWidget(docs_title)
         h_box_docs.addStretch()
+        h_box_docs.addWidget(QLabel("Time per page"))
         h_box_docs.addWidget(self.docs_slider)
         h_box_vids = QHBoxLayout()
         h_box_vids.addWidget(vids_title)
         h_box_vids.addStretch()
+        h_box_vids.addWidget(QLabel("Video speed"))
         h_box_vids.addWidget(self.vids_slider)
 
         v_box = QVBoxLayout()
