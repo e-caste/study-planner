@@ -12,7 +12,7 @@ from pymediainfo import MediaInfo
 video_exts = [".mp4", ".flv", ".mov", ".avi"]
 
 
-def _human_readable_time(seconds) -> str:
+def human_readable_time(seconds) -> str:
     if seconds < 0:
         print("An error occurred due to negative time being calculated. Please try again.", file=stderr)
         exit(-1)
@@ -130,62 +130,3 @@ def get_result(paths: List[str]) -> dict:
         'video_error': video_error,
         'videos': get_total_files(paths, type="vid"),
     }
-
-
-def get_work_amount_analysis(pdf_pages: int,
-                             pdf_error: bool,
-                             pdf_documents: int,
-                             video_seconds: float,
-                             video_error: bool,
-                             videos: int):
-    result = ["", "", ""]
-
-    if pdf_pages == 0:
-        result[0] += "It seems there are no pdfs to study in the given directories."
-    else:
-        pdf_time = pdf_pages * 120
-        # the initial and ending newlines are used to not cut off the QLabel in ShowResult
-        result[0] += f"\nThere are {pdf_pages} pdf pages to study in the given directories spanning {pdf_documents} files.\n" \
-                     f"At 1 minute per page, it will take you {_human_readable_time(pdf_pages * 60)} to study these " \
-                     f"documents.\n" \
-                     f"At 2 minutes per page, it will take you {_human_readable_time(pdf_time)} to study these documents.\n" \
-                     f"Instead, skimming very quickly (20 seconds per page) will take you " \
-                     f"{_human_readable_time(pdf_pages * 20)}.\n"
-
-    if pdf_error:
-        result[0] += "\nIt seems some PDF documents could not be opened correctly, they have been skipped.\n"
-
-    if video_seconds == 0:
-        result[1] += "It seems there are no video lectures to watch in the given directories."
-    else:
-        result[1] += f"There are {_human_readable_time(video_seconds)} to watch in the given directories divided between " \
-                     f"{videos} videos.\n" \
-                     f"At 1.5x it will take you {_human_readable_time(video_seconds / 1.5)} to finish.\n" \
-                     f"At 2x it will take you {_human_readable_time(video_seconds / 2)}.\n" \
-                     f"Instead, accounting for pauses to take notes (0.75x), it will take you " \
-                     f"{_human_readable_time(video_seconds / 0.75)}.\n"
-
-    if video_error:
-        result[1] += "\nIt seems some video files could not be opened correctly, they have been skipped.\n"
-
-    if pdf_pages > 0 and video_seconds > 0:
-        result[2] += f"In total, it will take you approximately {_human_readable_time(pdf_time + video_seconds)} " \
-                     f"to study everything in the given directories.\n" \
-                     f"Going very fast (20 seconds per page, watching videos at 2x) will take you " \
-                     f"{_human_readable_time(pdf_pages * 20 + video_seconds / 2)}.\n" \
-                     f"Taking your time to master the subject (2 minutes per page, watching videos at 0.75x) will take you " \
-                     f"{_human_readable_time(pdf_pages * 120 + video_seconds / 0.75)}.\n"
-
-    # add second space after comma so that UI displays correctly
-    return [text.replace(", ", ",  ") for text in result]
-
-
-def get_analysis(paths: List[str]):
-    result = get_result(paths)
-    analysis = get_work_amount_analysis(result['pdf_pages'],
-                                        result['pdf_error'],
-                                        result['pdf_documents'],
-                                        result['video_seconds'],
-                                        result['video_error'],
-                                        result['videos'])
-    return analysis

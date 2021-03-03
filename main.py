@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QFileDia
     QPushButton, QFrame, QLineEdit, QDialog, QStackedWidget, QTreeView, QSlider
 from PyQt5.QtGui import QFont, QIcon
 
-from backend import get_analysis
+from backend import get_result, human_readable_time
 from waiting_spinner_widget import QtWaitingSpinner
 
 DB_PATH = Path.joinpath(Path.home(), '.study_planner')
@@ -34,7 +34,7 @@ def set_last_dir(last_dir: str):
 
 
 class Analyser(QThread):
-    analysis_signal = pyqtSignal(list)  # List[str]
+    result_signal = pyqtSignal(dict)
 
     def __init__(self, paths: List[str]):
         QThread.__init__(self)
@@ -42,7 +42,7 @@ class Analyser(QThread):
 
     def run(self):
         start = time()
-        self.analysis_signal.emit(get_analysis(self.paths))
+        self.result_signal.emit(get_result(self.paths))
         print(f"Time taken to analyse the following paths:\n{self.paths}\n--> {time() - start} s")
 
 
@@ -202,8 +202,18 @@ class ShowResult(QWidget):
     def __init__(self, paths: List[str]):
         # noinspection PyArgumentList
         super().__init__()
+
         self.analyser = Analyser(paths)
         self.loading_screen = LoadingScreen(show_spinner=True)
+
+        self.result = {
+            'pdf_pages': 0,
+            'pdf_error': False,
+            'pdf_documents': 0,
+            'video_seconds': 0,
+            'video_error': False,
+            'videos': 0,
+        }
 
         # TODO: save values to preferences file
         self.docs_seconds = 60
@@ -220,6 +230,13 @@ class ShowResult(QWidget):
         self.docs_slider.valueChanged.connect(self.update_docs_seconds)
         self.vids_slider.valueChanged.connect(self.update_vids_multiplier)
 
+        self.analysis_docs = QLabel("")
+        self.analysis_docs.setWordWrap(True)
+        self.analysis_vids = QLabel("")
+        self.analysis_vids.setWordWrap(True)
+        self.analysis_tot = QLabel("")
+        self.analysis_tot.setWordWrap(True)
+
         self.get_analysis_threaded()
         self.show_loading_screen()
 
@@ -227,7 +244,7 @@ class ShowResult(QWidget):
         self.setLayout(self.loading_screen)
 
     def get_analysis_threaded(self):
-        self.analyser.analysis_signal.connect(self.init_ui)
+        self.analyser.result_signal.connect(self.init_ui)
         self.analyser.start()
 
     # https://stackoverflow.com/a/10439207
@@ -235,16 +252,13 @@ class ShowResult(QWidget):
         QWidget().setLayout(self.layout())
         self.setLayout(new_layout)
 
-    def init_ui(self, analysis):
-        analysis_docs = QLabel(analysis[0])
-        analysis_docs.setWordWrap(True)
-        analysis_vids = QLabel(analysis[1])
-        analysis_vids.setWordWrap(True)
-        analysis_tot = QLabel(analysis[2])
-        analysis_tot.setWordWrap(True)
+    def init_ui(self, result: dict):
+        self.result = result
+
+        self.update_analysis_labels()
 
         font_height = 15
-        label_width = int(width - 0.72 * width)
+        label_width = int(0.28 * width)
         title_font = QFont()
         title_font.setPointSize(font_height)
         title_font.setBold(True)
@@ -268,17 +282,17 @@ class ShowResult(QWidget):
 
         v_box = QVBoxLayout()
         v_box.addLayout(h_box_docs)
-        v_box.addWidget(analysis_docs)
+        v_box.addWidget(self.analysis_docs)
         v_box.addWidget(HLine())
         v_box.addLayout(h_box_vids)
-        v_box.addWidget(analysis_vids)
+        v_box.addWidget(self.analysis_vids)
 
-        height = int(2/3 * analysis_docs.height() + 2 * font_height)
-        if len(analysis_tot.text()) > 0:
+        height = int(2/3 * self.analysis_docs.height() + 2 * font_height)
+        if len(self.analysis_tot.text()) > 0:
             v_box.addWidget(HLine())
             v_box.addWidget(tot_title)
-            v_box.addWidget(analysis_tot)
-            height = int(analysis_docs.height() + 3 * 2 * font_height)
+            v_box.addWidget(self.analysis_tot)
+            height = int(self.analysis_docs.height() + 3 * 2 * font_height)
 
         choose_directory_button = QPushButton(BTN_TITLE_TEXT)
         choose_directory_button.clicked.connect(lambda: show_file_dialog())
@@ -300,9 +314,48 @@ class ShowResult(QWidget):
 
     def update_docs_seconds(self, seconds: int):
         self.docs_seconds = seconds
+        self.update_analysis_labels()
 
     def update_vids_multiplier(self, multiplier: int):
         self.vids_multiplier = multiplier / 10
+        self.update_analysis_labels()
+
+    def update_analysis_labels(self):
+        docs_text, vids_text, tot_text = "", "", ""
+
+        if self.result['pdf_pages'] == 0:
+            # the initial and ending newlines are used to not cut off the QLabel in ShowResult
+            docs_text += "\nIt seems there are no pdfs to study in the given directories.\n"
+            self.docs_slider.setHidden(True)
+        else:
+            docs_time = self.docs_seconds * self.result['pdf_pages']
+            docs_text += f"\nThere are {self.result['pdf_pages']} pdf pages to study in the given directories " \
+                         f"spanning {self.result['pdf_documents']} files.\n" \
+                         f"At {human_readable_time(self.docs_seconds)} per page, it will take you " \
+                         f"{human_readable_time(docs_time)} to study these " \
+                         f"documents.\n"
+        if self.result['pdf_error']:
+            docs_text += "\nIt seems some PDF documents could not be opened correctly, they have been skipped.\n"
+
+        if self.result['video_seconds'] == 0:
+            vids_text += "\nIt seems there are no video lectures to watch in the given directories.\n"
+            self.vids_slider.setHidden(True)
+        else:
+            vids_time = self.result['video_seconds'] * self.vids_multiplier
+            vids_text += f"\nThere are {human_readable_time(self.result['video_seconds'])} to watch in the given " \
+                         f"directories divided between {self.result['videos']}.\n" \
+                         f"At {self.vids_multiplier}x it will take you " \
+                         f"{human_readable_time(vids_time)} to finish.\n"
+        if self.result['video_error']:
+            vids_text += "\nIt seems some video files could not be opened correctly, they have been skipped.\n"
+
+        self.analysis_docs.setText(docs_text)
+        self.analysis_vids.setText(vids_text)
+
+        if self.result['pdf_pages'] > 0 and self.result['video_seconds'] > 0:
+            tot_text += f"\nIn total, it will take you {human_readable_time(docs_time + vids_time)} to study everything" \
+                        f" in the given directories.\n"
+            self.analysis_tot.setText(tot_text)
 
 
 def main():
