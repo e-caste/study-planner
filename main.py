@@ -361,13 +361,14 @@ class ShowResult(QWidget):
         if self.result['video_error']:
             vids_text += "\nIt seems some video files could not be opened correctly, they have been skipped.\n"
 
-        self.analysis_docs.setText(docs_text)
-        self.analysis_vids.setText(vids_text)
+        # add second space after comma so that UI displays correctly
+        self.analysis_docs.setText(docs_text.replace(", ", ",  "))
+        self.analysis_vids.setText(vids_text.replace(", ", ",  "))
 
         if self.result['pdf_pages'] > 0 and self.result['video_seconds'] > 0:
             tot_text += f"\nIn total, it will take you {human_readable_time(docs_time + vids_time)} to study everything" \
                         f" in the given directories.\n"
-            self.analysis_tot.setText(tot_text)
+            self.analysis_tot.setText(tot_text.replace(", ", ",  "))
 
 
 def main():
