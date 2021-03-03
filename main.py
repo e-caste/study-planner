@@ -205,14 +205,20 @@ class ShowResult(QWidget):
         self.analyser = Analyser(paths)
         self.loading_screen = LoadingScreen(show_spinner=True)
 
+        # TODO: save values to preferences file
+        self.docs_seconds = 60
+        self.vids_multiplier = 1
+
         self.docs_slider = QSlider(orientation=Qt.Horizontal)
         self.vids_slider = QSlider(orientation=Qt.Horizontal)
         self.docs_slider.setMinimum(10)   # 10 seconds per slide
         self.docs_slider.setMaximum(600)  # 10 minutes per slide
-        self.docs_slider.setValue(10)  # TODO: save value to preferences file
+        self.docs_slider.setValue(self.docs_seconds)
         self.vids_slider.setMinimum(1)    # 0.1x -> 10 times longer
         self.vids_slider.setMaximum(50)   # 5x -> 1/20 of the length
-        self.vids_slider.setValue(10)  # TODO: save value to preferences file
+        self.vids_slider.setValue(self.vids_multiplier * 10)
+        self.docs_slider.valueChanged.connect(self.update_docs_seconds)
+        self.vids_slider.valueChanged.connect(self.update_vids_multiplier)
 
         self.get_analysis_threaded()
         self.show_loading_screen()
@@ -291,6 +297,12 @@ class ShowResult(QWidget):
 
         # height = 160 * number_of_widgets
         window.resize(width, height)
+
+    def update_docs_seconds(self, seconds: int):
+        self.docs_seconds = seconds
+
+    def update_vids_multiplier(self, multiplier: int):
+        self.vids_multiplier = multiplier / 10
 
 
 def main():
