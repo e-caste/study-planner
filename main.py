@@ -221,9 +221,9 @@ class ShowResult(QWidget):
 
         self.docs_slider = QSlider(orientation=Qt.Horizontal)
         self.vids_slider = QSlider(orientation=Qt.Horizontal)
-        self.docs_slider.setMinimum(10)   # 10 seconds per slide
-        self.docs_slider.setMaximum(600)  # 10 minutes per slide
-        self.docs_slider.setValue(self.docs_seconds)
+        self.docs_slider.setMinimum(1)   # 10 seconds per slide
+        self.docs_slider.setMaximum(60)  # 10 minutes per slide
+        self.docs_slider.setValue(self.docs_seconds // 10)
         self.vids_slider.setMinimum(1)    # 0.1x -> 10 times longer
         self.vids_slider.setMaximum(50)   # 5x -> 1/20 of the length
         self.vids_slider.setValue(self.vids_multiplier * 10)
@@ -312,7 +312,7 @@ class ShowResult(QWidget):
         window.resize(width, height)
 
     def update_docs_seconds(self, seconds: int):
-        self.docs_seconds = seconds
+        self.docs_seconds = seconds * 10
         self.update_analysis_labels()
 
     def update_vids_multiplier(self, multiplier: int):
@@ -363,8 +363,6 @@ def main():
     window = Window()
     global width
     width = window.width()
-
-    print(400 / width)
     sysexit(app.exec_())
 
 
