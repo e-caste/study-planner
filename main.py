@@ -1,14 +1,16 @@
 from pathlib import Path
 from sys import argv, exit as sysexit, platform
 import sys
-from typing import List
+from typing import List, Callable
 from time import time
 import json
+from json import JSONDecodeError
+from enum import Enum
 
 from PyQt5.QtCore import QRect, pyqtSignal, QThread, Qt
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QFileDialog, QHBoxLayout, QVBoxLayout, \
     QPushButton, QFrame, QLineEdit, QDialog, QStackedWidget, QTreeView, QSlider
-from PyQt5.QtGui import QFont, QIcon
+from PyQt5.QtGui import QFont, QIcon, QCloseEvent
 
 from backend import get_result, human_readable_time
 from waiting_spinner_widget import QtWaitingSpinner
@@ -18,22 +20,47 @@ DB_FILE = str(Path.joinpath(DB_PATH, '_study_planner_db.json'))
 BTN_TITLE_TEXT = "Choose files and/or directories"
 
 
-def get_last_dir() -> str:
+class Preference(Enum):
+    last_dir = 'last_dir'
+    docs_seconds = 'docs_seconds'
+    vids_multiplier = 'vids_multiplier'
+
+
+class PreferenceDefault(Enum):
+    last_dir = str(Path.home())
+    docs_seconds = 60
+    vids_multiplier = 1.
+
+
+def get_preference(preference: Preference, default_value: PreferenceDefault, valid_condition: Callable):
+    def write_default():
+        with open(DB_FILE, 'w') as f:
+            f.write(json.dumps({preference.value: default_value.value}))
+
+    Path.mkdir(DB_PATH, exist_ok=True)
+    if not Path(DB_FILE).exists():
+        write_default()
+    try:
+        data = json.load(open(DB_FILE, 'r'))
+    except JSONDecodeError:  # empty file
+        write_default()
+        return default_value.value
+    if valid_condition(data):
+        return data[preference.value]
+    return default_value.value
+
+
+def set_preference(preference: str, default_value, new_value):
     Path.mkdir(DB_PATH, exist_ok=True)
     if not Path(DB_FILE).exists():
         with open(DB_FILE, 'w') as f:
-            f.write(json.dumps({'last_dir': str(Path.home())}))
+            f.write(json.dumps({preference: default_value}))
+            return
     with open(DB_FILE, 'r') as f:
         data = json.load(f)
-        # if the user or the system has changed the contents of the file, it may not contain a valid path
-        if 'last_dir' in data and Path(data['last_dir']).is_dir():
-            return data['last_dir']
-        return str(Path.home())
-
-
-def set_last_dir(last_dir: str):
+        data[preference] = new_value
     with open(DB_FILE, 'w') as f:
-        f.write(json.dumps({'last_dir': last_dir.strip()}))
+        f.write(json.dumps(data))
 
 
 class Analyser(QThread):
@@ -54,6 +81,17 @@ class Window(QMainWindow):
         # noinspection PyArgumentList
         super().__init__()
         self.init_ui()
+
+    # save preferences to file before closing the program
+    def closeEvent(self, event: QCloseEvent):
+        if isinstance(self.centralWidget(), ShowResult):
+            set_preference(Preference.docs_seconds.value,
+                           PreferenceDefault.docs_seconds.value,
+                           self.centralWidget().docs_seconds)
+            set_preference(Preference.vids_multiplier.value,
+                           PreferenceDefault.vids_multiplier.value,
+                           self.centralWidget().vids_multiplier)
+        event.accept()
 
     def init_ui(self):
         welcome = Welcome()
@@ -77,7 +115,10 @@ class Window(QMainWindow):
 #     containing_layout.replaceWidget(widget, FileDialog(last_dir=get_last_dir()))
 
 def show_file_dialog():
-    FileDialog(last_dir=get_last_dir())
+    FileDialog(last_dir=get_preference(Preference.last_dir,
+                                       PreferenceDefault.last_dir,
+                                       lambda data: Preference.last_dir.value in data
+                                                    and Path(data[Preference.last_dir.value]).is_dir()))
 
 
 class Welcome(QWidget):
@@ -187,7 +228,9 @@ class FileDialog(QWidget):
             window.setCentralWidget(Welcome(retry=True))
         else:
             print(paths, str(Path(paths[0]).parent))
-            set_last_dir(str(Path(paths[0]).parent))
+            set_preference(Preference.last_dir.value,
+                           PreferenceDefault.last_dir.value,
+                           str(Path(paths[0]).parent))
             window.takeCentralWidget()
             window.setCentralWidget(ShowResult(paths))
 
@@ -218,9 +261,17 @@ class ShowResult(QWidget):
             'videos': 0,
         }
 
-        # TODO: save values to preferences file
-        self.docs_seconds = 60
-        self.vids_multiplier = 1
+        self.docs_seconds = get_preference(Preference.docs_seconds,
+                                           PreferenceDefault.docs_seconds,
+                                           lambda data: Preference.docs_seconds.value in data
+                                                        and isinstance(data[Preference.docs_seconds.value], int)
+                                                        and 10 <= data[Preference.docs_seconds.value] <= 600)
+        self.vids_multiplier = get_preference(Preference.vids_multiplier,
+                                              PreferenceDefault.vids_multiplier,
+                                              lambda data: Preference.vids_multiplier.value in data
+                                                           and (isinstance(data[Preference.vids_multiplier.value], float)
+                                                                or isinstance(data[Preference.vids_multiplier.value], int))
+                                                           and 0.1 <= data[Preference.vids_multiplier.value] <= 5)
 
         self.docs_slider = QSlider(orientation=Qt.Horizontal)
         self.vids_slider = QSlider(orientation=Qt.Horizontal)
@@ -229,9 +280,12 @@ class ShowResult(QWidget):
         self.docs_slider.setValue(self.docs_seconds // 10)
         self.vids_slider.setMinimum(1)    # 0.1x -> 10 times longer
         self.vids_slider.setMaximum(50)   # 5x -> 1/20 of the length
-        self.vids_slider.setValue(self.vids_multiplier * 10)
+        self.vids_slider.setValue(int(self.vids_multiplier * 10))
         self.docs_slider.valueChanged.connect(self.update_docs_seconds)
         self.vids_slider.valueChanged.connect(self.update_vids_multiplier)
+
+        self.docs_slider_label = QLabel("Time per page")
+        self.vids_slider_label = QLabel("Video speed")
 
         self.analysis_docs = QLabel("")
         self.analysis_docs.setWordWrap(True)
@@ -277,12 +331,12 @@ class ShowResult(QWidget):
         h_box_docs = QHBoxLayout()
         h_box_docs.addWidget(docs_title)
         h_box_docs.addStretch()
-        h_box_docs.addWidget(QLabel("Time per page"))
+        h_box_docs.addWidget(self.docs_slider_label)
         h_box_docs.addWidget(self.docs_slider)
         h_box_vids = QHBoxLayout()
         h_box_vids.addWidget(vids_title)
         h_box_vids.addStretch()
-        h_box_vids.addWidget(QLabel("Video speed"))
+        h_box_vids.addWidget(self.vids_slider_label)
         h_box_vids.addWidget(self.vids_slider)
 
         v_box = QVBoxLayout()
@@ -331,6 +385,7 @@ class ShowResult(QWidget):
             # the initial and ending newlines are used to not cut off the QLabel in ShowResult
             docs_text += "\nIt seems there are no pdfs to study in the given directories.\n"
             self.docs_slider.setHidden(True)
+            self.docs_slider_label.setHidden(True)
         else:
             docs_time = self.docs_seconds * self.result['pdf_pages']
             docs_text += f"\nThere are {self.result['pdf_pages']} pdf pages to study in the given directories " \
@@ -344,6 +399,7 @@ class ShowResult(QWidget):
         if self.result['video_seconds'] == 0:
             vids_text += "\nIt seems there are no video lectures to watch in the given directories.\n"
             self.vids_slider.setHidden(True)
+            self.vids_slider_label.setHidden(True)
         else:
             vids_time = self.result['video_seconds'] * self.vids_multiplier
             vids_text += f"\nThere are {human_readable_time(self.result['video_seconds'])} to watch in the given " \
