@@ -19,10 +19,19 @@ def human_readable_time(seconds) -> str:
     elif 0 <= seconds < 60:
         return f"{seconds} second(s)"
     elif 60 <= seconds < 3600:
-        return f"{int(seconds / 60)} minute(s)"
+        minutes = int(seconds // 60)
+        remainder = int(seconds % 60)
+        res = f"{minutes} minute(s)"
+        if remainder != 0:
+            res += f" and {remainder} second(s)"
+        return res
     elif seconds >= 3600:
-        hours = int(seconds / 3600)
-        return f"{hours} hour(s) and {int((seconds - hours * 3600) / 60)} minute(s)"
+        hours = int(seconds // 3600)
+        remainder = int(seconds % 3600)
+        res = f"{hours} hour(s)"
+        if remainder != 0:
+            res += f" and {remainder // 60} minute(s)"
+        return res
 
 
 def _is_video_file(path: str) -> bool:
