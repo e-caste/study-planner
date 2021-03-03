@@ -3,6 +3,7 @@ from sys import argv, exit as sysexit, platform
 import sys
 from typing import List
 from time import time
+import json
 
 from PyQt5.QtCore import QRect, pyqtSignal, QThread, Qt
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QFileDialog, QHBoxLayout, QVBoxLayout, \
@@ -13,24 +14,26 @@ from backend import get_result, human_readable_time
 from waiting_spinner_widget import QtWaitingSpinner
 
 DB_PATH = Path.joinpath(Path.home(), '.study_planner')
-DB_FILE = str(Path.joinpath(DB_PATH, '_study_planner_db.txt'))
+DB_FILE = str(Path.joinpath(DB_PATH, '_study_planner_db.json'))
 BTN_TITLE_TEXT = "Choose files and/or directories"
 
 
-def get_last_dir():
+def get_last_dir() -> str:
     Path.mkdir(DB_PATH, exist_ok=True)
     if not Path(DB_FILE).exists():
         with open(DB_FILE, 'w') as f:
-            f.write(str(Path.home()))
+            f.write(json.dumps({'last_dir': str(Path.home())}))
     with open(DB_FILE, 'r') as f:
-        path = f.read()
+        data = json.load(f)
         # if the user or the system has changed the contents of the file, it may not contain a valid path
-        return path if Path(path).is_dir() else str(Path.home())
+        if 'last_dir' in data and Path(data['last_dir']).is_dir():
+            return data['last_dir']
+        return str(Path.home())
 
 
 def set_last_dir(last_dir: str):
     with open(DB_FILE, 'w') as f:
-        f.write(last_dir.strip())
+        f.write(json.dumps({'last_dir': last_dir.strip()}))
 
 
 class Analyser(QThread):
