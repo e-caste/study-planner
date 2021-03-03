@@ -4,9 +4,9 @@ import sys
 from typing import List
 from time import time
 
-from PyQt5.QtCore import QRect, pyqtSignal, QThread
+from PyQt5.QtCore import QRect, pyqtSignal, QThread, Qt
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QFileDialog, QHBoxLayout, QVBoxLayout, \
-    QPushButton, QFrame, QLineEdit, QDialog, QStackedWidget, QTreeView
+    QPushButton, QFrame, QLineEdit, QDialog, QStackedWidget, QTreeView, QSlider
 from PyQt5.QtGui import QFont, QIcon
 
 from backend import get_analysis
@@ -205,6 +205,15 @@ class ShowResult(QWidget):
         self.analyser = Analyser(paths)
         self.loading_screen = LoadingScreen(show_spinner=True)
 
+        self.docs_slider = QSlider(orientation=Qt.Horizontal)
+        self.vids_slider = QSlider(orientation=Qt.Horizontal)
+        self.docs_slider.setMinimum(10)   # 10 seconds per slide
+        self.docs_slider.setMaximum(600)  # 10 minutes per slide
+        self.docs_slider.setValue(10)  # TODO: save value to preferences file
+        self.vids_slider.setMinimum(1)    # 0.1x -> 10 times longer
+        self.vids_slider.setMaximum(50)   # 5x -> 1/20 of the length
+        self.vids_slider.setValue(10)  # TODO: save value to preferences file
+
         self.get_analysis_threaded()
         self.show_loading_screen()
 
@@ -229,21 +238,33 @@ class ShowResult(QWidget):
         analysis_tot.setWordWrap(True)
 
         font_height = 15
+        label_width = int(width - 0.72 * width)
         title_font = QFont()
         title_font.setPointSize(font_height)
         title_font.setBold(True)
         docs_title = QLabel("Documents")
         docs_title.setFont(title_font)
+        docs_title.setMinimumWidth(label_width)
         vids_title = QLabel("Videos")
         vids_title.setFont(title_font)
+        vids_title.setMinimumWidth(label_width)
         tot_title = QLabel("Total")
         tot_title.setFont(title_font)
 
+        h_box_docs = QHBoxLayout()
+        h_box_docs.addWidget(docs_title)
+        h_box_docs.addStretch()
+        h_box_docs.addWidget(self.docs_slider)
+        h_box_vids = QHBoxLayout()
+        h_box_vids.addWidget(vids_title)
+        h_box_vids.addStretch()
+        h_box_vids.addWidget(self.vids_slider)
+
         v_box = QVBoxLayout()
-        v_box.addWidget(docs_title)
+        v_box.addLayout(h_box_docs)
         v_box.addWidget(analysis_docs)
         v_box.addWidget(HLine())
-        v_box.addWidget(vids_title)
+        v_box.addLayout(h_box_vids)
         v_box.addWidget(analysis_vids)
 
         height = int(2/3 * analysis_docs.height() + 2 * font_height)
@@ -278,6 +299,8 @@ def main():
     window = Window()
     global width
     width = window.width()
+
+    print(400 / width)
     sysexit(app.exec_())
 
 
