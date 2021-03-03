@@ -353,7 +353,7 @@ class ShowResult(QWidget):
             self.vids_slider.setHidden(True)
             self.vids_slider_label.setHidden(True)
         else:
-            vids_time = self.result['video_seconds'] * self.vids_multiplier
+            vids_time = self.result['video_seconds'] / self.vids_multiplier
             vids_text += f"\nThere are {human_readable_time(self.result['video_seconds'])} to watch in the given " \
                          f"directories divided between {self.result['videos']}.\n" \
                          f"At {self.vids_multiplier}x it will take you " \
