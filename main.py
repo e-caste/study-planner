@@ -1,66 +1,18 @@
 from pathlib import Path
 from sys import argv, exit as sysexit, platform
 import sys
-from typing import List, Callable
+from typing import List
 from time import time
-import json
-from json import JSONDecodeError
-from enum import Enum
 
 from PyQt5.QtCore import QRect, pyqtSignal, QThread, Qt
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QFileDialog, QHBoxLayout, QVBoxLayout, \
     QPushButton, QFrame, QLineEdit, QDialog, QStackedWidget, QTreeView, QSlider
 from PyQt5.QtGui import QFont, QIcon, QCloseEvent
 
-from backend import get_result, human_readable_time
+from backend import get_result, human_readable_time, Preference, PreferenceDefault, get_preference, set_preference
 from waiting_spinner_widget import QtWaitingSpinner
 
-DB_PATH = Path.joinpath(Path.home(), '.study_planner')
-DB_FILE = str(Path.joinpath(DB_PATH, '_study_planner_db.json'))
 BTN_TITLE_TEXT = "Choose files and/or directories"
-
-
-class Preference(Enum):
-    last_dir = 'last_dir'
-    docs_seconds = 'docs_seconds'
-    vids_multiplier = 'vids_multiplier'
-
-
-class PreferenceDefault(Enum):
-    last_dir = str(Path.home())
-    docs_seconds = 60
-    vids_multiplier = 1.
-
-
-def get_preference(preference: Preference, default_value: PreferenceDefault, valid_condition: Callable):
-    def write_default():
-        with open(DB_FILE, 'w') as f:
-            f.write(json.dumps({preference.value: default_value.value}))
-
-    Path.mkdir(DB_PATH, exist_ok=True)
-    if not Path(DB_FILE).exists():
-        write_default()
-    try:
-        data = json.load(open(DB_FILE, 'r'))
-    except JSONDecodeError:  # empty file
-        write_default()
-        return default_value.value
-    if valid_condition(data):
-        return data[preference.value]
-    return default_value.value
-
-
-def set_preference(preference: str, default_value, new_value):
-    Path.mkdir(DB_PATH, exist_ok=True)
-    if not Path(DB_FILE).exists():
-        with open(DB_FILE, 'w') as f:
-            f.write(json.dumps({preference: default_value}))
-            return
-    with open(DB_FILE, 'r') as f:
-        data = json.load(f)
-        data[preference] = new_value
-    with open(DB_FILE, 'w') as f:
-        f.write(json.dumps(data))
 
 
 class Analyser(QThread):
