@@ -37,12 +37,7 @@ class Window(QMainWindow):
     # save preferences to file before closing the program
     def closeEvent(self, event: QCloseEvent):
         if isinstance(self.centralWidget(), ShowResult):
-            set_preference(Preference.docs_seconds.value,
-                           PreferenceDefault.docs_seconds.value,
-                           self.centralWidget().docs_seconds)
-            set_preference(Preference.vids_multiplier.value,
-                           PreferenceDefault.vids_multiplier.value,
-                           self.centralWidget().vids_multiplier)
+            save_multiplier_preferences(self.centralWidget())
         event.accept()
 
     def init_ui(self):
@@ -306,7 +301,7 @@ class ShowResult(QWidget):
             height = int(2/3 * self.analysis_docs.height() + 3 * font_height)
 
         choose_directory_button = QPushButton(BTN_TITLE_TEXT)
-        choose_directory_button.clicked.connect(lambda: show_file_dialog())
+        choose_directory_button.clicked.connect(self.click_directory_button)
 
         h_box = QHBoxLayout()
         h_box.addStretch()
@@ -369,6 +364,19 @@ class ShowResult(QWidget):
             tot_text += f"\nIn total, it will take you {human_readable_time(docs_time + vids_time)} to study everything" \
                         f" in the given directories.\n"
             self.analysis_tot.setText(tot_text.replace(", ", ",  "))
+
+    def click_directory_button(self):
+        save_multiplier_preferences(self)
+        show_file_dialog()
+
+
+def save_multiplier_preferences(widget: ShowResult):
+    set_preference(Preference.docs_seconds.value,
+                   PreferenceDefault.docs_seconds.value,
+                   widget.docs_seconds)
+    set_preference(Preference.vids_multiplier.value,
+                   PreferenceDefault.vids_multiplier.value,
+                   widget.vids_multiplier)
 
 
 def main():
