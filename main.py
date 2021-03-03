@@ -287,16 +287,15 @@ class ShowResult(QWidget):
         v_box.addLayout(h_box_vids)
         v_box.addWidget(self.analysis_vids)
 
-        height = int(2/3 * self.analysis_docs.height() + 2 * font_height)
+        height = int(1/3 * self.analysis_docs.height() + 2 * font_height)
         if len(self.analysis_tot.text()) > 0:
             v_box.addWidget(HLine())
             v_box.addWidget(tot_title)
             v_box.addWidget(self.analysis_tot)
-            height = int(self.analysis_docs.height() + 3 * 2 * font_height)
+            height = int(2/3 * self.analysis_docs.height() + 3 * font_height)
 
         choose_directory_button = QPushButton(BTN_TITLE_TEXT)
         choose_directory_button.clicked.connect(lambda: show_file_dialog())
-        height += 20
 
         h_box = QHBoxLayout()
         h_box.addStretch()
