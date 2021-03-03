@@ -20,7 +20,7 @@ jobs:
         run: pip install -r requirements-dev.txt
       # see https://docs.github.com/en/actions/guides/building-and-testing-python#specifying-a-python-version
       - name: Create app with pyinstaller
-        run: pyinstaller --windowed --name "Study Planner" --add-binary '/Users/runner/hostedtoolcache/Python/3.6.*/x64/lib/python3.6/site-packages/pymediainfo/libmediainfo*.dylib:.' --icon icons/icon_square.png main.py
+        run: pyinstaller --windowed --name "Study Planner" --add-binary '/Users/runner/hostedtoolcache/Python/3.9.*/x64/lib/python3.9/site-packages/pymediainfo/libmediainfo*.dylib:.' --icon icons/icon_square.png main.py
       - name: Compress app to archive
         run: |
           cd dist
