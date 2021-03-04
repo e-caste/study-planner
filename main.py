@@ -327,9 +327,10 @@ class ShowResult(QWidget):
             v_box.addWidget(self.analysis_tot)
             height = int(self.analysis_docs.height() + 3 * font_height)
 
-        v_box.addWidget(HLine())
-        v_box.addLayout(h_box_prep)
-        v_box.addWidget(self.analysis_prep)
+        if self.result['pdf_pages'] > 0 or self.result['video_seconds'] > 0:
+            v_box.addWidget(HLine())
+            v_box.addLayout(h_box_prep)
+            v_box.addWidget(self.analysis_prep)
 
         choose_directory_button = QPushButton(BTN_TITLE_TEXT)
         choose_directory_button.clicked.connect(self.click_directory_button)
@@ -401,8 +402,8 @@ class ShowResult(QWidget):
                         f" in the given directories.\n"
             self.analysis_tot.setText(tot_text.replace(", ", ",  "))
 
-        prep_text = f"\nStudying {self.day_hours} hours every day, it will take you around " \
-                    f"{ceil((docs_time + vids_time) / 3600 / self.day_hours)} days to prepare for this exam.\n"
+        prep_text = f"\nStudying {self.day_hours} hour(s) every day, it will take you around " \
+                    f"{ceil((docs_time + vids_time) / 3600 / self.day_hours)} day(s) to prepare for this exam.\n"
         self.analysis_prep.setText(prep_text.replace(", ", ",  "))
 
     def click_directory_button(self):
