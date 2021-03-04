@@ -242,9 +242,14 @@ class ShowResult(QWidget):
         self.vids_slider.valueChanged.connect(self.update_vids_multiplier)
         self.prep_slider.valueChanged.connect(self.update_day_hours)
 
+        slider_label_font = QFont()
+        slider_label_font.setItalic(True)
         self.docs_slider_label = QLabel("Time per page")
+        self.docs_slider_label.setFont(slider_label_font)
         self.vids_slider_label = QLabel("Video speed")
+        self.vids_slider_label.setFont(slider_label_font)
         self.prep_slider_label = QLabel("Hours per day")
+        self.prep_slider_label.setFont(slider_label_font)
 
         self.analysis_docs = QLabel("")
         self.analysis_docs.setWordWrap(True)
