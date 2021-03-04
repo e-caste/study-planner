@@ -3,6 +3,7 @@ from sys import argv, exit as sysexit, platform
 import sys
 from typing import List
 from time import time
+from math import ceil
 
 from PyQt5.QtCore import QRect, pyqtSignal, QThread, Qt
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QFileDialog, QHBoxLayout, QVBoxLayout, \
@@ -37,7 +38,7 @@ class Window(QMainWindow):
     # save preferences to file before closing the program
     def closeEvent(self, event: QCloseEvent):
         if isinstance(self.centralWidget(), ShowResult):
-            save_multiplier_preferences(self.centralWidget())
+            save_slider_preferences(self.centralWidget())
         event.accept()
 
     def init_ui(self):
@@ -219,20 +220,31 @@ class ShowResult(QWidget):
                                                            and (isinstance(data[Preference.vids_multiplier.value], float)
                                                                 or isinstance(data[Preference.vids_multiplier.value], int))
                                                            and 0.1 <= data[Preference.vids_multiplier.value] <= 5)
+        self.day_hours = get_preference(Preference.day_hours,
+                                        PreferenceDefault.day_hours,
+                                        lambda data: Preference.day_hours.value in data
+                                                     and (isinstance(data[Preference.day_hours.value], int))
+                                                     and 1 <= data[Preference.day_hours.value] <= 24)
 
         self.docs_slider = QSlider(orientation=Qt.Horizontal)
         self.vids_slider = QSlider(orientation=Qt.Horizontal)
+        self.prep_slider = QSlider(orientation=Qt.Horizontal)
         self.docs_slider.setMinimum(1)   # 10 seconds per slide
         self.docs_slider.setMaximum(60)  # 10 minutes per slide
         self.docs_slider.setValue(self.docs_seconds // 10)
         self.vids_slider.setMinimum(1)    # 0.1x -> 10 times longer
         self.vids_slider.setMaximum(50)   # 5x -> 1/5 of the length
         self.vids_slider.setValue(int(self.vids_multiplier * 10))
+        self.prep_slider.setMinimum(1)    # 1 hour per day
+        self.prep_slider.setMaximum(24)   # 24 hours per day
+        self.prep_slider.setValue(self.day_hours)
         self.docs_slider.valueChanged.connect(self.update_docs_seconds)
         self.vids_slider.valueChanged.connect(self.update_vids_multiplier)
+        self.prep_slider.valueChanged.connect(self.update_day_hours)
 
         self.docs_slider_label = QLabel("Time per page")
         self.vids_slider_label = QLabel("Video speed")
+        self.prep_slider_label = QLabel("Hours per day")
 
         self.analysis_docs = QLabel("")
         self.analysis_docs.setWordWrap(True)
@@ -240,6 +252,8 @@ class ShowResult(QWidget):
         self.analysis_vids.setWordWrap(True)
         self.analysis_tot = QLabel("")
         self.analysis_tot.setWordWrap(True)
+        self.analysis_prep = QLabel("")
+        self.analysis_prep.setWordWrap(True)
 
         self.get_analysis_threaded()
         self.show_loading_screen()
@@ -274,6 +288,9 @@ class ShowResult(QWidget):
         vids_title.setMinimumWidth(label_width)
         tot_title = QLabel("Total")
         tot_title.setFont(title_font)
+        prep_title = QLabel("Preparation")
+        prep_title.setFont(title_font)
+        prep_title.setMinimumWidth(label_width)
 
         h_box_docs = QHBoxLayout()
         h_box_docs.addWidget(docs_title)
@@ -285,6 +302,11 @@ class ShowResult(QWidget):
         h_box_vids.addStretch()
         h_box_vids.addWidget(self.vids_slider_label)
         h_box_vids.addWidget(self.vids_slider)
+        h_box_prep = QHBoxLayout()
+        h_box_prep.addWidget(prep_title)
+        h_box_prep.addStretch()
+        h_box_prep.addWidget(self.prep_slider_label)
+        h_box_prep.addWidget(self.prep_slider)
 
         v_box = QVBoxLayout()
         v_box.addLayout(h_box_docs)
@@ -293,12 +315,16 @@ class ShowResult(QWidget):
         v_box.addLayout(h_box_vids)
         v_box.addWidget(self.analysis_vids)
 
-        height = int(1/3 * self.analysis_docs.height() + 2 * font_height)
+        height = int(2/3 * self.analysis_docs.height() + 2 * font_height)
         if len(self.analysis_tot.text()) > 0:
             v_box.addWidget(HLine())
             v_box.addWidget(tot_title)
             v_box.addWidget(self.analysis_tot)
-            height = int(2/3 * self.analysis_docs.height() + 3 * font_height)
+            height = int(self.analysis_docs.height() + 3 * font_height)
+
+        v_box.addWidget(HLine())
+        v_box.addLayout(h_box_prep)
+        v_box.addWidget(self.analysis_prep)
 
         choose_directory_button = QPushButton(BTN_TITLE_TEXT)
         choose_directory_button.clicked.connect(self.click_directory_button)
@@ -325,8 +351,13 @@ class ShowResult(QWidget):
         self.vids_multiplier = multiplier / 10
         self.update_analysis_labels()
 
+    def update_day_hours(self, hours: int):
+        self.day_hours = hours
+        self.update_analysis_labels()
+
     def update_analysis_labels(self):
-        docs_text, vids_text, tot_text = "", "", ""
+        docs_text, vids_text, tot_text, prep_text = "", "", "", ""
+        docs_time, vids_time = 0, 0
 
         if self.result['pdf_pages'] == 0:
             # the initial and ending newlines are used to not cut off the QLabel in ShowResult
@@ -365,18 +396,25 @@ class ShowResult(QWidget):
                         f" in the given directories.\n"
             self.analysis_tot.setText(tot_text.replace(", ", ",  "))
 
+        prep_text = f"\nStudying {self.day_hours} hours every day, it will take you around " \
+                    f"{ceil((docs_time + vids_time) / 3600 / self.day_hours)} days to prepare for this exam.\n"
+        self.analysis_prep.setText(prep_text.replace(", ", ",  "))
+
     def click_directory_button(self):
-        save_multiplier_preferences(self)
+        save_slider_preferences(self)
         show_file_dialog()
 
 
-def save_multiplier_preferences(widget: ShowResult):
+def save_slider_preferences(widget: ShowResult):
     set_preference(Preference.docs_seconds.value,
                    PreferenceDefault.docs_seconds.value,
                    widget.docs_seconds)
     set_preference(Preference.vids_multiplier.value,
                    PreferenceDefault.vids_multiplier.value,
                    widget.vids_multiplier)
+    set_preference(Preference.day_hours.value,
+                   PreferenceDefault.day_hours.value,
+                   widget.day_hours)
 
 
 def main():
