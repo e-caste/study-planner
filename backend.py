@@ -21,12 +21,14 @@ class Preference(Enum):
     last_dir = 'last_dir'
     docs_seconds = 'docs_seconds'
     vids_multiplier = 'vids_multiplier'
+    day_hours = 'day_hours'
 
 
 class PreferenceDefault(Enum):
     last_dir = str(Path.home())
     docs_seconds = 60
     vids_multiplier = 1.
+    day_hours = 5
 
 
 def get_preference(preference: Preference, default_value: PreferenceDefault, valid_condition: Callable):
