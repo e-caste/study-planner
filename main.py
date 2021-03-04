@@ -226,7 +226,7 @@ class ShowResult(QWidget):
         self.docs_slider.setMaximum(60)  # 10 minutes per slide
         self.docs_slider.setValue(self.docs_seconds // 10)
         self.vids_slider.setMinimum(1)    # 0.1x -> 10 times longer
-        self.vids_slider.setMaximum(50)   # 5x -> 1/20 of the length
+        self.vids_slider.setMaximum(50)   # 5x -> 1/5 of the length
         self.vids_slider.setValue(int(self.vids_multiplier * 10))
         self.docs_slider.valueChanged.connect(self.update_docs_seconds)
         self.vids_slider.valueChanged.connect(self.update_vids_multiplier)
@@ -315,7 +315,7 @@ class ShowResult(QWidget):
         window.setCentralWidget(self)
 
         # height = 160 * number_of_widgets
-        window.resize(width, height)
+        self.resize(width, height)
 
     def update_docs_seconds(self, seconds: int):
         self.docs_seconds = seconds * 10
@@ -382,9 +382,11 @@ def save_multiplier_preferences(widget: ShowResult):
 def main():
     app = QApplication(argv)
     global window
-    window = Window()
     global width
+    # global height
+    window = Window()
     width = window.width()
+    # height = window.height()
     sysexit(app.exec_())
 
 
