@@ -37,6 +37,8 @@ Some notes on point 3:
 - `pip install -r requirements-dev.txt`
 - `python main.py`
 
+On GNU/Linux you need to install `libmediainfo-dev` with your distribution's package manager.
+
 ### Credits
 
 Icon by <a href="https://freeicons.io/profile/6156">Reda</a> on <a href="https://freeicons.io">freeicons.io</a>
