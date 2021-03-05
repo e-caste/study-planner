@@ -4,6 +4,7 @@ import sys
 from typing import List
 from time import time
 from math import ceil
+from contextlib import redirect_stderr
 
 from PyQt5.QtCore import QRect, pyqtSignal, QThread, Qt
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QFileDialog, QHBoxLayout, QVBoxLayout, \
@@ -426,9 +427,6 @@ def save_slider_preferences(widget: ShowResult):
 
 
 def main():
-    # redirect GTK warnings to logfile instead of the console
-    if platform.startswith("linux"):
-        sys.stderr = open(str(Path.joinpath(DB_PATH, "errors_log.txt")), 'w')
     app = QApplication(argv)
     global window
     global width
@@ -440,4 +438,9 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    # redirect GTK warnings to logfile instead of the console
+    if platform.startswith("linux"):
+        with redirect_stderr(open(str(Path.joinpath(DB_PATH, "errors_log.txt")), 'w')):
+            main()
+    else:
+        main()
