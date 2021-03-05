@@ -10,7 +10,8 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QFileDia
     QPushButton, QFrame, QLineEdit, QDialog, QStackedWidget, QTreeView, QSlider
 from PyQt5.QtGui import QFont, QIcon, QCloseEvent
 
-from backend import get_result, human_readable_time, Preference, PreferenceDefault, get_preference, set_preference
+from backend import get_result, human_readable_time, Preference, PreferenceDefault, get_preference, set_preference, \
+    DB_PATH
 from waiting_spinner_widget import QtWaitingSpinner
 
 BTN_TITLE_TEXT = "Choose files and/or directories"
@@ -425,6 +426,9 @@ def save_slider_preferences(widget: ShowResult):
 
 
 def main():
+    # redirect GTK warnings to logfile instead of the console
+    if platform.startswith("linux"):
+        sys.stderr = open(str(Path.joinpath(DB_PATH, "errors_log.txt")), 'w')
     app = QApplication(argv)
     global window
     global width
