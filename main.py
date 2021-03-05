@@ -388,7 +388,7 @@ class ShowResult(QWidget):
         else:
             vids_time = self.result['video_seconds'] / self.vids_multiplier
             vids_text += f"\nThere are {human_readable_time(self.result['video_seconds'])} to watch in the given " \
-                         f"directories divided between {self.result['videos']}.\n" \
+                         f"directories divided between {self.result['videos']} videos.\n" \
                          f"At {self.vids_multiplier}x it will take you " \
                          f"{human_readable_time(vids_time)} to finish.\n"
         if self.result['video_error']:
