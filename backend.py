@@ -63,28 +63,6 @@ def set_preference(preference: str, default_value, new_value):
         f.write(json.dumps(data))
 
 
-def human_readable_time(seconds) -> str:
-    if seconds < 0:
-        print("An error occurred due to negative time being calculated. Please try again.", file=stderr)
-        exit(-1)
-    elif 0 <= seconds < 60:
-        return f"{seconds} second(s)"
-    elif 60 <= seconds < 3600:
-        minutes = int(seconds // 60)
-        remainder = int(seconds % 60)
-        res = f"{minutes} minute(s)"
-        if remainder != 0:
-            res += f" and {remainder} second(s)"
-        return res
-    elif seconds >= 3600:
-        hours = int(seconds // 3600)
-        remainder = int(seconds % 3600)
-        res = f"{hours} hour(s)"
-        if remainder != 0:
-            res += f" and {remainder // 60} minute(s)"
-        return res
-
-
 def _is_video_file(path: str) -> bool:
     return any([path.endswith(ext) for ext in video_exts])
 

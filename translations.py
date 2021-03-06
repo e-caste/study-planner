@@ -1,4 +1,5 @@
 import locale
+from sys import stderr
 
 
 class Translator:
@@ -11,6 +12,40 @@ class Translator:
             raise Exception(f"Message {msg} is not available.")
         else:
             return self.translations[msg][self.lang].format(*args)
+
+    def human_readable_time(self, seconds) -> str:
+        if seconds < 0:
+            print("An error occurred due to negative time being calculated. Please try again.", file=stderr)
+            exit(-1)
+        elif 0 <= seconds < 60:
+            if seconds == 1:
+                return f"{seconds} second" if self.lang == 'en' else f"{seconds} secondo"
+            else:
+                return f"{seconds} seconds" if self.lang == 'en' else f"{seconds} secondi"
+        elif 60 <= seconds < 3600:
+            minutes = int(seconds // 60)
+            remainder = int(seconds % 60)
+            if minutes == 1:
+                res = f"{minutes} minute" if self.lang == 'en' else f"{minutes} minuto"
+            else:
+                res = f"{minutes} minutes" if self.lang == 'en' else f"{minutes} minuti"
+            if remainder == 1:
+                res += f" and {remainder} second" if self.lang == 'en' else f" e {remainder} secondo"
+            elif remainder > 1:
+                res += f" and {remainder} seconds" if self.lang == 'en' else f" e {remainder} secondi"
+            return res
+        elif seconds >= 3600:
+            hours = int(seconds // 3600)
+            minutes = int(seconds % 3600) // 60
+            if hours == 1:
+                res = f"{hours} hour" if self.lang == 'en' else f"{hours} ora"
+            else:
+                res = f"{hours} hours" if self.lang == 'en' else f"{hours} ore"
+            if minutes == 1:
+                res += f" and {minutes} minute" if self.lang == 'en' else f" e {minutes} minuto"
+            elif minutes > 1:
+                res += f" and {minutes} minutes" if self.lang == 'en' else f" e {minutes} minuti"
+            return res
 
     translations = {
         'choose_button': {
