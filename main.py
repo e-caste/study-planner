@@ -369,45 +369,46 @@ class ShowResult(QWidget):
         docs_time, vids_time = 0, 0
 
         if self.result['pdf_pages'] == 0:
-            # the initial and ending newlines are used to not cut off the QLabel in ShowResult
-            docs_text += "\nIt seems there are no pdfs to study in the given directories.\n"
+            # the ending newlines are used to not cut off the QLabel in ShowResult
+            docs_text += "It seems there are no pdfs to study in the given directories.\n"
             self.docs_slider.setHidden(True)
             self.docs_slider_label.setHidden(True)
         else:
             docs_time = self.docs_seconds * self.result['pdf_pages']
-            docs_text += f"\nThere are {self.result['pdf_pages']} pdf pages to study in the given directories " \
-                         f"spanning {self.result['pdf_documents']} files.\n" \
-                         f"At {human_readable_time(self.docs_seconds)} per page, it will take you " \
-                         f"{human_readable_time(docs_time)} to study these " \
-                         f"documents.\n"
+            docs_text += f"There are <b>{self.result['pdf_pages']}</b> pdf pages to study in the given directories " \
+                         f"spanning <b>{self.result['pdf_documents']}</b> files.\n" \
+                         f"At <b>{human_readable_time(self.docs_seconds)}</b> per page, it will take you " \
+                         f"<b>{human_readable_time(docs_time)}</b> to study these " \
+                         f"documents.\n".replace("\n", "<br>")
         if self.result['pdf_error']:
             docs_text += "\nIt seems some PDF documents could not be opened correctly, they have been skipped.\n"
 
         if self.result['video_seconds'] == 0:
-            vids_text += "\nIt seems there are no video lectures to watch in the given directories.\n"
+            vids_text += "It seems there are no video lectures to watch in the given directories.\n"
             self.vids_slider.setHidden(True)
             self.vids_slider_label.setHidden(True)
         else:
             vids_time = self.result['video_seconds'] / self.vids_multiplier
-            vids_text += f"\nThere are {human_readable_time(self.result['video_seconds'])} to watch in the given " \
-                         f"directories divided between {self.result['videos']} videos.\n" \
-                         f"At {self.vids_multiplier}x it will take you " \
-                         f"{human_readable_time(vids_time)} to finish.\n"
+            vids_text += f"There are <b>{human_readable_time(self.result['video_seconds'])}</b> to watch in the " \
+                         f"given directories divided between <b>{self.result['videos']}</b> videos.\n" \
+                         f"At <b>{self.vids_multiplier}x</b> it will take you " \
+                         f"<b>{human_readable_time(vids_time)}</b> to finish.\n".replace("\n", "<br>")
         if self.result['video_error']:
             vids_text += "\nIt seems some video files could not be opened correctly, they have been skipped.\n"
 
-        # add second space after comma so that UI displays correctly
-        self.analysis_docs.setText(docs_text.replace(", ", ",  "))
-        self.analysis_vids.setText(vids_text.replace(", ", ",  "))
+        # add HTML space after comma so that UI displays correctly
+        self.analysis_docs.setText(docs_text.replace(", ", ",&nbsp;"))
+        self.analysis_vids.setText(vids_text.replace(", ", ",&nbsp;"))
 
         if self.result['pdf_pages'] > 0 and self.result['video_seconds'] > 0:
-            tot_text += f"\nIn total, it will take you {human_readable_time(docs_time + vids_time)} to study everything" \
-                        f" in the given directories.\n"
-            self.analysis_tot.setText(tot_text.replace(", ", ",  "))
+            tot_text += f"In total, it will take you <b>{human_readable_time(docs_time + vids_time)}</b> to study" \
+                        f" everything in the given files or directories.\n".replace("\n", "<br>")
+            self.analysis_tot.setText(tot_text.replace(", ", ",&nbsp;"))
 
-        prep_text = f"\nStudying {self.day_hours} hour(s) every day, it will take you around " \
-                    f"{ceil((docs_time + vids_time) / 3600 / self.day_hours)} day(s) to prepare for this exam.\n"
-        self.analysis_prep.setText(prep_text.replace(", ", ",  "))
+        prep_text = f"Studying <b>{self.day_hours} hour(s)</b> every day, it will take you around " \
+                    f"<b>{ceil((docs_time + vids_time) / 3600 / self.day_hours)} day(s)</b> to prepare for this " \
+                    f"exam.\n".replace("\n", "<br>")
+        self.analysis_prep.setText(prep_text.replace(", ", ",&nbsp;"))
 
     def click_directory_button(self):
         save_slider_preferences(self)
