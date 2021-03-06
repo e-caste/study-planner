@@ -6,7 +6,6 @@ from queue import Queue  # https://stackoverflow.com/a/36926134
 import json
 from json import JSONDecodeError
 from enum import Enum
-from itertools import product
 
 from PyPDF2 import PdfFileReader
 from PyPDF2.utils import PdfReadError
