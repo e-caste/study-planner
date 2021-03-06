@@ -5,6 +5,7 @@ from typing import List
 from time import time
 from math import ceil
 from contextlib import redirect_stderr
+import locale
 
 from PyQt5.QtCore import QRect, pyqtSignal, QThread, Qt
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QFileDialog, QHBoxLayout, QVBoxLayout, \
@@ -428,6 +429,9 @@ def save_slider_preferences(widget: ShowResult):
 
 
 def main():
+    global lang
+    lang = "it" if "it" in locale.getdefaultlocale()[0] else "en"
+    print(f"Language detected: {lang}")
     app = QApplication(argv)
     global window
     global width
