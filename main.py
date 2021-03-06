@@ -322,18 +322,18 @@ class ShowResult(QWidget):
         v_box.addLayout(h_box_vids)
         v_box.addWidget(self.analysis_vids)
 
-        height = int(1/3 * self.analysis_docs.height() + 2 * font_height)
+        height = int(1/2 * self.analysis_docs.height() + 2 * font_height)
         if len(self.analysis_tot.text()) > 0:
             v_box.addWidget(HLine())
             v_box.addWidget(tot_title)
             v_box.addWidget(self.analysis_tot)
-            height += int(1/6 * self.analysis_docs.height() + font_height)
+            height += int(1/4 * self.analysis_docs.height() + font_height)
 
         if self.result['pdf_pages'] > 0 or self.result['video_seconds'] > 0:
             v_box.addWidget(HLine())
             v_box.addLayout(h_box_prep)
             v_box.addWidget(self.analysis_prep)
-            height += int(1/6 * self.analysis_docs.height() + font_height)
+            height += int(1/4 * self.analysis_docs.height() + font_height)
 
         choose_directory_button = QPushButton(BTN_TITLE_TEXT)
         choose_directory_button.clicked.connect(self.click_directory_button)
