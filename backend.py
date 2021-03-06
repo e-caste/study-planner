@@ -21,6 +21,7 @@ def _get_all_possible_lowercase_uppercase_extension_combinations(strings: List[s
 
 
 video_exts = _get_all_possible_lowercase_uppercase_extension_combinations(["mp4", "flv", "mov", "avi", "mkv"])
+doc_exts = _get_all_possible_lowercase_uppercase_extension_combinations(["pdf"])
 DB_PATH = Path.joinpath(Path.home(), '.study_planner')
 DB_FILE = str(Path.joinpath(DB_PATH, '_study_planner_db.json'))
 
@@ -96,12 +97,17 @@ def _is_video_file(path: str) -> bool:
     return any([path.endswith(ext) for ext in video_exts])
 
 
+def _is_doc_file(path: str) -> bool:
+    return any([path.endswith(ext) for ext in doc_exts])
+
+
 def _get_thread_doc_files(path: str) -> int:
     tot = 0
     if Path(path).is_file():
         tot += 1
     elif Path(path).is_dir():
-        tot += len(list(Path(path).rglob("*.pdf")))
+        for ext in doc_exts:
+            tot += len(list(Path(path).rglob(f"*{ext}")))
     return tot
 
 
@@ -118,11 +124,12 @@ def _get_thread_vid_files(path: str) -> int:
 def _get_thread_pdf_pages(path: str) -> Tuple[int, bool]:
     pages, error = 0, False
     try:
-        if Path(path).is_file() and path.endswith(".pdf"):
+        if Path(path).is_file() and _is_doc_file(path):
             pages += PdfFileReader(open(path, 'rb'), strict=False).getNumPages()
         elif Path(path).is_dir():
-            for f in Path(path).rglob("*.pdf"):
-                pages += PdfFileReader(open(f, 'rb'), strict=False).getNumPages()
+            for ext in doc_exts:
+                for f in Path(path).rglob(f"*{ext}"):
+                    pages += PdfFileReader(open(f, 'rb'), strict=False).getNumPages()
     except (PdfReadError, Exception) as e:
         print(e)
         error = True
