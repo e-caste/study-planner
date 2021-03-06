@@ -405,8 +405,8 @@ class ShowResult(QWidget):
             self.analysis_tot.setText(tot_text.replace(", ", ",&nbsp;"))
 
         prep_text = t.translate('prep_text',
-                                self.day_hours,
-                                ceil((docs_time + vids_time) / 3600 / self.day_hours)).replace("\n", "<br>")
+                                t.get_hours(self.day_hours),
+                                t.get_days(ceil((docs_time + vids_time) / 3600 / self.day_hours))).replace("\n", "<br>")
         self.analysis_prep.setText(prep_text.replace(", ", ",&nbsp;"))
 
     def click_directory_button(self):
