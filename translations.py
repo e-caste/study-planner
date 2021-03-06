@@ -47,6 +47,18 @@ class Translator:
                 res += f" and {minutes} minutes" if self.lang == 'en' else f" e {minutes} minuti"
             return res
 
+    def get_hours(self, hours: int) -> str:
+        if hours == 1:
+            return f"{hours} hour" if self.lang == 'en' else f"{hours} ora"
+        else:
+            return f"{hours} hours" if self.lang == 'en' else f"{hours} ore"
+
+    def get_days(self, days: int) -> str:
+        if days == 1:
+            return f"{days} day" if self.lang == 'en' else f"{days} giorno"
+        else:
+            return f"{days} days" if self.lang == 'en' else f"{days} giorni"
+
     translations = {
         'choose_button': {
             'it': "Scegli file e/o cartelle",
@@ -125,9 +137,9 @@ class Translator:
             'en': "In total, it will take you <b>{}</b> to study everything in the given files or directories.\n",
         },
         'prep_text': {
-            'it': "Studiando <b>{} ora/e</b> ogni giorno, ci impiegherai circa <b>{} giorno/i</b> a preparare questo "
+            'it': "Studiando <b>{}</b> ogni giorno, ci impiegherai circa <b>{}</b> a preparare questo "
                   "esame.\n",
-            'en': "Studying <b>{} hour(s)</b> every day, it will take you around <b>{} day(s)</b> to prepare for this "
+            'en': "Studying <b>{}</b> every day, it will take you around <b>{}</b> to prepare for this "
                   "exam.\n",
         }
     }
