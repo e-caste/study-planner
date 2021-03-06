@@ -5,7 +5,6 @@ from typing import List
 from time import time
 from math import ceil
 from contextlib import redirect_stderr
-import locale
 
 from PyQt5.QtCore import QRect, pyqtSignal, QThread, Qt
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QFileDialog, QHBoxLayout, QVBoxLayout, \
@@ -15,8 +14,7 @@ from PyQt5.QtGui import QFont, QIcon, QCloseEvent
 from backend import get_result, human_readable_time, Preference, PreferenceDefault, get_preference, set_preference, \
     DB_PATH
 from waiting_spinner_widget import QtWaitingSpinner
-
-BTN_TITLE_TEXT = "Choose files and/or directories"
+from translations import Translator
 
 
 class Analyser(QThread):
@@ -75,10 +73,9 @@ def show_file_dialog():
 class Welcome(QWidget):
     def __init__(self, retry: bool = False):
         super().__init__()
-        try_again = "You haven't selected any file or directory!\n\n" if retry else ""
-        self.info = QLabel(f"{try_again}Choose an exam directory to get an estimation of the time required to "
-                           f"study its contents.")
-        self.choose_directory_button = QPushButton(BTN_TITLE_TEXT)
+        try_again = t.translate('no_files_selected') if retry else ""
+        self.info = QLabel(t.translate('starting_text', try_again))
+        self.choose_directory_button = QPushButton(t.translate('choose_button'))
         self.choose_directory_button.clicked.connect(lambda: show_file_dialog())
 
         v_box = QVBoxLayout()
@@ -94,7 +91,7 @@ class Welcome(QWidget):
 class LoadingScreen(QVBoxLayout):
     def __init__(self, show_spinner: bool = True):
         super().__init__()
-        self.loading_text = QLabel("Waiting for you to choose some files or directories...")
+        self.loading_text = QLabel(t.translate('waiting'))
         self.loading_spinner = QtWaitingSpinner()
 
         if show_spinner:
@@ -164,7 +161,7 @@ class FileDialog(QWidget):
     def __init__(self, last_dir: str):
         # noinspection PyArgumentList
         super().__init__()
-        self.title = BTN_TITLE_TEXT
+        self.title = t.translate('choose_button')
         self.last_dir = last_dir
 
         # TODO: fix this is not shown
@@ -172,7 +169,7 @@ class FileDialog(QWidget):
         self.show_result_widget()
 
     def show_result_widget(self):
-        paths = get_open_files_and_dirs(caption=BTN_TITLE_TEXT,
+        paths = get_open_files_and_dirs(caption=self.title,
                                         directory=self.last_dir)
         if not paths:
             window.takeCentralWidget()
@@ -247,11 +244,11 @@ class ShowResult(QWidget):
 
         slider_label_font = QFont()
         slider_label_font.setItalic(True)
-        self.docs_slider_label = QLabel("Time per page")
+        self.docs_slider_label = QLabel(t.translate('time_per_page'))
         self.docs_slider_label.setFont(slider_label_font)
-        self.vids_slider_label = QLabel("Video speed")
+        self.vids_slider_label = QLabel(t.translate('video_speed'))
         self.vids_slider_label.setFont(slider_label_font)
-        self.prep_slider_label = QLabel("Hours per day")
+        self.prep_slider_label = QLabel(t.translate('hours_per_day'))
         self.prep_slider_label.setFont(slider_label_font)
 
         self.analysis_docs = QLabel("")
@@ -288,15 +285,15 @@ class ShowResult(QWidget):
         title_font = QFont()
         title_font.setPointSize(font_height)
         title_font.setBold(True)
-        docs_title = QLabel("Documents")
+        docs_title = QLabel(t.translate('documents'))
         docs_title.setFont(title_font)
         docs_title.setMinimumWidth(label_width)
-        vids_title = QLabel("Videos")
+        vids_title = QLabel(t.translate('videos'))
         vids_title.setFont(title_font)
         vids_title.setMinimumWidth(label_width)
-        tot_title = QLabel("Total")
+        tot_title = QLabel(t.translate('total'))
         tot_title.setFont(title_font)
-        prep_title = QLabel("Preparation")
+        prep_title = QLabel(t.translate('preparation'))
         prep_title.setFont(title_font)
         prep_title.setMinimumWidth(label_width)
 
@@ -336,7 +333,7 @@ class ShowResult(QWidget):
             v_box.addWidget(self.analysis_prep)
             height += int(1/4 * self.analysis_docs.height() + font_height)
 
-        choose_directory_button = QPushButton(BTN_TITLE_TEXT)
+        choose_directory_button = QPushButton(t.translate('choose_button'))
         choose_directory_button.clicked.connect(self.click_directory_button)
 
         h_box = QHBoxLayout()
@@ -371,44 +368,45 @@ class ShowResult(QWidget):
 
         if self.result['pdf_pages'] == 0:
             # the ending newlines are used to not cut off the QLabel in ShowResult
-            docs_text += "It seems there are no pdfs to study in the given directories.\n"
+            docs_text += t.translate('no_docs')
             self.docs_slider.setHidden(True)
             self.docs_slider_label.setHidden(True)
         else:
             docs_time = self.docs_seconds * self.result['pdf_pages']
-            docs_text += f"There are <b>{self.result['pdf_pages']}</b> pdf pages to study in the given directories " \
-                         f"spanning <b>{self.result['pdf_documents']}</b> files.\n" \
-                         f"At <b>{human_readable_time(self.docs_seconds)}</b> per page, it will take you " \
-                         f"<b>{human_readable_time(docs_time)}</b> to study these " \
-                         f"documents.\n".replace("\n", "<br>")
+            docs_text += t.translate('docs_text',
+                                     self.result['pdf_pages'],
+                                     self.result['pdf_documents'],
+                                     human_readable_time(self.docs_seconds),
+                                     human_readable_time(docs_time)).replace("\n", "<br>")
         if self.result['pdf_error']:
-            docs_text += "\nIt seems some PDF documents could not be opened correctly, they have been skipped.\n"
+            docs_text += t.translate('pdf_error')
 
         if self.result['video_seconds'] == 0:
-            vids_text += "It seems there are no video lectures to watch in the given directories.\n"
+            vids_text += t.translate('no_videos')
             self.vids_slider.setHidden(True)
             self.vids_slider_label.setHidden(True)
         else:
             vids_time = self.result['video_seconds'] / self.vids_multiplier
-            vids_text += f"There are <b>{human_readable_time(self.result['video_seconds'])}</b> to watch in the " \
-                         f"given directories divided between <b>{self.result['videos']}</b> videos.\n" \
-                         f"At <b>{self.vids_multiplier}x</b> it will take you " \
-                         f"<b>{human_readable_time(vids_time)}</b> to finish.\n".replace("\n", "<br>")
+            vids_text += t.translate('vids_text',
+                                     human_readable_time(self.result['video_seconds']),
+                                     self.result['videos'],
+                                     self.vids_multiplier,
+                                     human_readable_time(vids_time)).replace("\n", "<br>")
         if self.result['video_error']:
-            vids_text += "\nIt seems some video files could not be opened correctly, they have been skipped.\n"
+            vids_text += t.translate('video_error')
 
         # add HTML space after comma so that UI displays correctly
         self.analysis_docs.setText(docs_text.replace(", ", ",&nbsp;"))
         self.analysis_vids.setText(vids_text.replace(", ", ",&nbsp;"))
 
         if self.result['pdf_pages'] > 0 and self.result['video_seconds'] > 0:
-            tot_text += f"In total, it will take you <b>{human_readable_time(docs_time + vids_time)}</b> to study" \
-                        f" everything in the given files or directories.\n".replace("\n", "<br>")
+            tot_text += t.translate('tot_text',
+                                    human_readable_time(docs_time + vids_time)).replace("\n", "<br>")
             self.analysis_tot.setText(tot_text.replace(", ", ",&nbsp;"))
 
-        prep_text = f"Studying <b>{self.day_hours} hour(s)</b> every day, it will take you around " \
-                    f"<b>{ceil((docs_time + vids_time) / 3600 / self.day_hours)} day(s)</b> to prepare for this " \
-                    f"exam.\n".replace("\n", "<br>")
+        prep_text = t.translate('prep_text',
+                                self.day_hours,
+                                ceil((docs_time + vids_time) / 3600 / self.day_hours)).replace("\n", "<br>")
         self.analysis_prep.setText(prep_text.replace(", ", ",&nbsp;"))
 
     def click_directory_button(self):
@@ -429,9 +427,8 @@ def save_slider_preferences(widget: ShowResult):
 
 
 def main():
-    global lang
-    lang = "it" if "it" in locale.getdefaultlocale()[0] else "en"
-    print(f"Language detected: {lang}")
+    global t
+    t = Translator()
     app = QApplication(argv)
     global window
     global width
