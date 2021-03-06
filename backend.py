@@ -12,7 +12,7 @@ from PyPDF2.utils import PdfReadError
 from pymediainfo import MediaInfo
 
 
-video_exts = [".mp4", ".flv", ".mov", ".avi"]
+video_exts = [".mp4", ".flv", ".mov", ".avi", ".mkv"]
 DB_PATH = Path.joinpath(Path.home(), '.study_planner')
 DB_FILE = str(Path.joinpath(DB_PATH, '_study_planner_db.json'))
 
