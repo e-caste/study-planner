@@ -11,7 +11,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QFileDia
     QPushButton, QFrame, QLineEdit, QDialog, QStackedWidget, QTreeView, QSlider
 from PyQt5.QtGui import QFont, QIcon, QCloseEvent
 
-from backend import get_result, human_readable_time, Preference, PreferenceDefault, get_preference, set_preference, \
+from backend import get_result, Preference, PreferenceDefault, get_preference, set_preference, \
     DB_PATH
 from waiting_spinner_widget import QtWaitingSpinner
 from translations import Translator
@@ -376,8 +376,8 @@ class ShowResult(QWidget):
             docs_text += t.translate('docs_text',
                                      self.result['pdf_pages'],
                                      self.result['pdf_documents'],
-                                     human_readable_time(self.docs_seconds),
-                                     human_readable_time(docs_time)).replace("\n", "<br>")
+                                     t.human_readable_time(self.docs_seconds),
+                                     t.human_readable_time(docs_time)).replace("\n", "<br>")
         if self.result['pdf_error']:
             docs_text += t.translate('pdf_error')
 
@@ -388,10 +388,10 @@ class ShowResult(QWidget):
         else:
             vids_time = self.result['video_seconds'] / self.vids_multiplier
             vids_text += t.translate('vids_text',
-                                     human_readable_time(self.result['video_seconds']),
+                                     t.human_readable_time(self.result['video_seconds']),
                                      self.result['videos'],
                                      self.vids_multiplier,
-                                     human_readable_time(vids_time)).replace("\n", "<br>")
+                                     t.human_readable_time(vids_time)).replace("\n", "<br>")
         if self.result['video_error']:
             vids_text += t.translate('video_error')
 
@@ -401,7 +401,7 @@ class ShowResult(QWidget):
 
         if self.result['pdf_pages'] > 0 and self.result['video_seconds'] > 0:
             tot_text += t.translate('tot_text',
-                                    human_readable_time(docs_time + vids_time)).replace("\n", "<br>")
+                                    t.human_readable_time(docs_time + vids_time)).replace("\n", "<br>")
             self.analysis_tot.setText(tot_text.replace(", ", ",&nbsp;"))
 
         prep_text = t.translate('prep_text',
