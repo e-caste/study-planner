@@ -6,13 +6,21 @@ from queue import Queue  # https://stackoverflow.com/a/36926134
 import json
 from json import JSONDecodeError
 from enum import Enum
+from itertools import product
 
 from PyPDF2 import PdfFileReader
 from PyPDF2.utils import PdfReadError
 from pymediainfo import MediaInfo
 
 
-video_exts = [".mp4", ".flv", ".mov", ".avi", ".mkv"]
+def _get_all_possible_lowercase_uppercase_extension_combinations(strings: List[str]) -> List[str]:
+    res = []
+    for s in strings:
+        res += map(''.join, product(*zip(s.upper(), s.lower())))
+    return list(set(f".{ext}" for ext in res))
+
+
+video_exts = _get_all_possible_lowercase_uppercase_extension_combinations(["mp4", "flv", "mov", "avi", "mkv"])
 DB_PATH = Path.joinpath(Path.home(), '.study_planner')
 DB_FILE = str(Path.joinpath(DB_PATH, '_study_planner_db.json'))
 
