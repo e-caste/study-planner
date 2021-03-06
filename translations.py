@@ -123,7 +123,7 @@ class Translator:
             'en': "It seems there are no video lectures to watch in the given directories.\n",
         },
         'vids_text': {
-            'it': "Ci sono <b>{}</b> da guardare nelle cartelle selezionate divisi tra <b>{}</b> video.\n A <b>{}</b> "
+            'it': "Ci sono <b>{}</b> da guardare nelle cartelle selezionate divisi tra <b>{}</b> video.\n A <b>{}x</b> "
                   "ci impiegherai <b>{}</b> a finire.\n",
             'en': "There are <b>{}</b> to watch in the given directories divided between <b>{}</b> videos.\nAt "
                   "<b>{}x</b> it will take you <b>{}</b> to finish.\n",
