@@ -54,6 +54,26 @@ class ReleaseFetcher(QThread):
             print(e, file=sys.stderr)
 
 
+release_fetcher = ReleaseFetcher()
+
+
+def fetch_latest_release():
+    release_fetcher.new_release_signal.connect(_add_link_to_new_release)
+    release_fetcher.start()
+
+
+def _add_link_to_new_release(new_release: tuple):
+    if new_release == CURRENT_RELEASE or window.centralWidget().showing_new_release:
+        return
+    new_release_label = QLabel(t.translate('new_release',
+                                           ".".join(map(str, new_release)),  # https://stackoverflow.com/a/19641614
+                                           ".".join(map(str, CURRENT_RELEASE))))
+    new_release_label.setOpenExternalLinks(True)
+    window.centralWidget().layout().addWidget(new_release_label)
+    window.resize(window.width(), window.height() + 40)
+    window.centralWidget().showing_new_release = True
+
+
 class Window(QMainWindow):
     def __init__(self):
         # noinspection PyArgumentList
@@ -82,26 +102,6 @@ class Window(QMainWindow):
 
         self.show()
         fetch_latest_release()
-
-
-release_fetcher = ReleaseFetcher()
-
-
-def fetch_latest_release():
-    release_fetcher.new_release_signal.connect(_add_link_to_new_release)
-    release_fetcher.start()
-
-
-def _add_link_to_new_release(new_release: tuple):
-    if new_release == CURRENT_RELEASE or window.centralWidget().showing_new_release:
-        return
-    # https://stackoverflow.com/a/19641614
-    new_release_label = QLabel(f'⭐️ New release: {".".join(map(str, new_release))}&nbsp;→&nbsp;'
-                               f'<a href="https://github.com/e-caste/study-planner/releases">Download here!</a>')
-    new_release_label.setOpenExternalLinks(True)
-    window.centralWidget().layout().addWidget(new_release_label)
-    window.resize(window.width(), window.height() + 40)
-    window.centralWidget().showing_new_release = True
 
 
 # def show_file_dialog(widget):
