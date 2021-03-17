@@ -9,7 +9,7 @@ from contextlib import redirect_stderr
 from PyQt5.QtCore import QRect, pyqtSignal, QThread, Qt
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QFileDialog, QHBoxLayout, QVBoxLayout, \
     QPushButton, QFrame, QLineEdit, QDialog, QStackedWidget, QTreeView, QSlider
-from PyQt5.QtGui import QFont, QIcon, QCloseEvent
+from PyQt5.QtGui import QFont, QIcon, QCloseEvent, QPalette, QColor
 import requests
 
 from backend import get_result, Preference, PreferenceDefault, get_preference, set_preference, \
@@ -78,6 +78,7 @@ class Window(QMainWindow):
     def __init__(self):
         # noinspection PyArgumentList
         super().__init__()
+        self.dark_mode_enabled = False
         self.welcome = Welcome()
         self.init_ui()
 
@@ -123,12 +124,16 @@ class Welcome(QWidget):
         self.info = QLabel(t.translate('starting_text', try_again))
         self.choose_directory_button = QPushButton(t.translate('choose_button'))
         self.choose_directory_button.clicked.connect(lambda: show_file_dialog())
+        self.toggle_dark_mode_button = QPushButton(t.translate('dark_mode'))
+        self.toggle_dark_mode_button.clicked.connect(lambda: toggle_dark_mode())
 
         v_box = QVBoxLayout()
         v_box.addWidget(self.info)
         h_box = QHBoxLayout()
         h_box.addStretch()
         h_box.addWidget(self.choose_directory_button)
+        if not platform.startswith("darwin"):
+            h_box.addWidget(self.toggle_dark_mode_button)
         h_box.addStretch()
         v_box.addLayout(h_box)
         self.setLayout(v_box)
@@ -383,9 +388,14 @@ class ShowResult(QWidget):
         choose_directory_button = QPushButton(t.translate('choose_button'))
         choose_directory_button.clicked.connect(self.click_directory_button)
 
+        toggle_dark_mode_button = QPushButton(t.translate('dark_mode'))
+        toggle_dark_mode_button.clicked.connect(lambda: toggle_dark_mode())
+
         h_box = QHBoxLayout()
         h_box.addStretch()
         h_box.addWidget(choose_directory_button)
+        if not platform.startswith("darwin"):
+            h_box.addWidget(toggle_dark_mode_button)
         h_box.addStretch()
         v_box.addLayout(h_box)
 
@@ -475,14 +485,47 @@ def save_slider_preferences(widget: ShowResult):
                    widget.day_hours)
 
 
+def _set_fusion_dark_mode(enabled: bool):
+    if enabled:
+        app.setStyle('fusion')
+        palette = QPalette()
+        palette.setColor(QPalette.Window, QColor(53, 53, 53))
+        palette.setColor(QPalette.WindowText, Qt.white)
+        palette.setColor(QPalette.Base, QColor(25, 25, 25))
+        palette.setColor(QPalette.AlternateBase, QColor(53, 53, 53))
+        palette.setColor(QPalette.ToolTipBase, Qt.black)
+        palette.setColor(QPalette.ToolTipText, Qt.white)
+        palette.setColor(QPalette.Text, Qt.white)
+        palette.setColor(QPalette.Button, QColor(53, 53, 53))
+        palette.setColor(QPalette.ButtonText, Qt.white)
+        palette.setColor(QPalette.BrightText, Qt.red)
+        palette.setColor(QPalette.Link, QColor(42, 130, 218))
+        palette.setColor(QPalette.Highlight, QColor(42, 130, 218))
+        palette.setColor(QPalette.HighlightedText, Qt.black)
+        app.setPalette(palette)
+    else:
+        app.setStyle(default_style)
+        app.setPalette(default_palette)
+
+
+def toggle_dark_mode():
+    window.dark_mode_enabled = not window.dark_mode_enabled
+    _set_fusion_dark_mode(window.dark_mode_enabled)
+
+
 def main():
     global t
     t = Translator()
+    global app
     app = QApplication(argv)
+    global default_style
+    default_style = str(app.style().objectName())
+    global default_palette
+    default_palette = app.palette()
     global window
-    global width
     # global height
     window = Window()
+    global width
     width = window.width()
     # height = window.height()
     sysexit(app.exec_())
