@@ -78,8 +78,8 @@ class Window(QMainWindow):
     def __init__(self):
         # noinspection PyArgumentList
         super().__init__()
-        self.dark_mode_enabled = get_preference(Preference.dark_mode.value,
-                                                PreferenceDefault.dark_mode.value,
+        self.dark_mode_enabled = get_preference(Preference.dark_mode,
+                                                PreferenceDefault.dark_mode,
                                                 lambda data: Preference.dark_mode.value in data
                                                              and isinstance(data[Preference.dark_mode.value], bool))
         self.welcome = Welcome()
