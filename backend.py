@@ -12,6 +12,7 @@ from PyPDF2.utils import PdfReadError
 from pymediainfo import MediaInfo
 
 
+CURRENT_RELEASE = (2, 1, 0)
 video_exts = [".mp4", ".flv", ".mov", ".avi", ".mkv"]
 doc_exts = [".pdf"]
 DB_PATH = Path.joinpath(Path.home(), '.study_planner')
