@@ -141,5 +141,11 @@ class Translator:
                   "esame.\n",
             'en': "Studying <b>{}</b> every day, it will take you around <b>{}</b> to prepare for this "
                   "exam.\n",
+        },
+        'new_release': {
+            'it': '⭐️ Nuova versione disponibile: {}&nbsp;-&nbsp;Installata: {}&nbsp;→&nbsp;'
+                  '<a href="https://github.com/e-caste/study-planner/releases">Scaricala qui!</a>',
+            'en': '⭐️ New version found: {}&nbsp;-&nbsp;Installed: {}&nbsp;→&nbsp;'
+                  '<a href="https://github.com/e-caste/study-planner/releases">Download here!</a>',
         }
     }
