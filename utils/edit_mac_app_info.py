@@ -1,6 +1,6 @@
 import plistlib
 
-file_to_edit = "Study Planner.app/Contents/Info.plist"
+file_to_edit = "dist/Study Planner.app/Contents/Info.plist"
 
 with open(file_to_edit, 'rb') as f:
     contents = plistlib.load(f)
