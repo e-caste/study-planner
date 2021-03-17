@@ -34,17 +34,22 @@ class Analyser(QThread):
 class ReleaseFetcher(QThread):
     # only emitted if there is a new release
     new_release_signal = pyqtSignal(tuple)
+    new_release = None  # cache to prevent spamming HTTP requests
 
     def run(self):
+        if self.new_release:
+            self.new_release_signal.emit(self.new_release)
         try:
             res = requests.get("https://api.github.com/repos/e-caste/study-planner/releases/latest")
             latest_release = res.json()['tag_name'] if 'tag_name' in res.json() else None
             if latest_release:
-                latest_release = (int(num) for num in latest_release.split("."))
+                # https://stackoverflow.com/a/16940351
+                latest_release = tuple(int(num) for num in latest_release.split("."))
                 is_new_release = all(latest >= current for latest, current in zip(latest_release, CURRENT_RELEASE)) and\
                     any(latest > current for latest, current in zip(latest_release, CURRENT_RELEASE))
-                if is_new_release:
-                    self.new_release_signal.emit(latest_release)
+                tmp = latest_release if is_new_release else CURRENT_RELEASE
+                self.new_release = tmp
+                self.new_release_signal.emit(tmp)
         except Exception as e:
             print(e, file=sys.stderr)
 
@@ -53,6 +58,7 @@ class Window(QMainWindow):
     def __init__(self):
         # noinspection PyArgumentList
         super().__init__()
+        self.welcome = Welcome()
         self.init_ui()
 
     # save preferences to file before closing the program
@@ -62,8 +68,7 @@ class Window(QMainWindow):
         event.accept()
 
     def init_ui(self):
-        welcome = Welcome()
-        self.setCentralWidget(welcome)
+        self.setCentralWidget(self.welcome)
 
         self.setWindowTitle("Study Planner")
         # on Windows and GNU/Linux
@@ -76,6 +81,27 @@ class Window(QMainWindow):
             self.setWindowIcon(QIcon(str(Path.joinpath(base_path, "icons", "icon_round.ico"))))
 
         self.show()
+        fetch_latest_release()
+
+
+release_fetcher = ReleaseFetcher()
+
+
+def fetch_latest_release():
+    release_fetcher.new_release_signal.connect(_add_link_to_new_release)
+    release_fetcher.start()
+
+
+def _add_link_to_new_release(new_release: tuple):
+    if new_release == CURRENT_RELEASE or window.centralWidget().showing_new_release:
+        return
+    # https://stackoverflow.com/a/19641614
+    new_release_label = QLabel(f'⭐️ New release: {".".join(map(str, new_release))}&nbsp;→&nbsp;'
+                               f'<a href="https://github.com/e-caste/study-planner/releases">Download here!</a>')
+    new_release_label.setOpenExternalLinks(True)
+    window.centralWidget().layout().addWidget(new_release_label)
+    window.resize(window.width(), window.height() + 40)
+    window.centralWidget().showing_new_release = True
 
 
 # def show_file_dialog(widget):
@@ -92,6 +118,7 @@ def show_file_dialog():
 class Welcome(QWidget):
     def __init__(self, retry: bool = False):
         super().__init__()
+        self.showing_new_release = False
         try_again = t.translate('no_files_selected') if retry else ""
         self.info = QLabel(t.translate('starting_text', try_again))
         self.choose_directory_button = QPushButton(t.translate('choose_button'))
@@ -218,6 +245,7 @@ class ShowResult(QWidget):
 
         self.analyser = Analyser(paths)
         self.loading_screen = LoadingScreen(show_spinner=True)
+        self.showing_new_release = False
 
         self.result = {
             'pdf_pages': 0,
@@ -368,6 +396,8 @@ class ShowResult(QWidget):
 
         # height = 160 * number_of_widgets
         window.resize(width, height)
+
+        fetch_latest_release()
 
     def update_docs_seconds(self, seconds: int):
         self.docs_seconds = seconds * 10
