@@ -1,12 +1,18 @@
-# this would be a job for sed, but BSD sed is quite complex, and Python is so much simpler
-key_value_pair = "\t<key>NSRequiresAquaSystemAppearance</key>\n\t<false/>\n"
-insert_before = "</dict>\n"
+import plistlib
+
 file_to_edit = "Study Planner.app/Contents/Info.plist"
 
-with open(file_to_edit, 'r+') as f:
-    lines = f.readlines()
-    insert_index = lines.index(insert_before)
-    lines.insert(insert_index, key_value_pair)
-    f.seek(0)
-    for line in lines:
-        f.write(line)
+with open(file_to_edit, 'rb') as f:
+    contents = plistlib.load(f)
+
+print("Info.plist before editing:", contents)
+
+contents['CFBundleIdentifier'] = 'dev.caste.study-planner'
+contents['CFBundleVersion'] = '2.2.0'
+contents['CFBundleShortVersionString'] = '2.2.0'
+contents['NSRequiresAquaSystemAppearance'] = 'false'  # enable auto dark mode
+
+print("Info.plist after editing:", contents)
+
+with open(file_to_edit, 'wb') as f:
+    plistlib.dump(contents, f)
