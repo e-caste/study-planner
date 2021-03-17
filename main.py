@@ -89,9 +89,9 @@ class Window(QMainWindow):
     def closeEvent(self, event: QCloseEvent):
         if isinstance(self.centralWidget(), ShowResult):
             save_slider_preferences(self.centralWidget())
-            set_preference(Preference.dark_mode.value,
-                           PreferenceDefault.dark_mode.value,
-                           window.dark_mode_enabled)
+        set_preference(Preference.dark_mode.value,
+                       PreferenceDefault.dark_mode.value,
+                       window.dark_mode_enabled)
         event.accept()
 
     def init_ui(self):
@@ -109,6 +109,7 @@ class Window(QMainWindow):
 
         self.show()
         fetch_latest_release()
+        _set_fusion_dark_mode(self.dark_mode_enabled)
 
 
 # def show_file_dialog(widget):
