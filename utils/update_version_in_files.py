@@ -1,4 +1,5 @@
 nv = (2, 2, 0)  # new version to set
+nv_str = '.'.join(map(str, nv))
 
 # update windows_version_file.py
 contents = f"""# UTF-8
@@ -56,5 +57,16 @@ with open("backend.py", 'r+') as f:
         if not line.startswith("CURRENT_RELEASE = "):
             f.write(line)
         else:
-            f.write(f"""CURRENT_RELEASE = "{'.'.join(map(str, nv))}"\n""")
+            f.write(f"""CURRENT_RELEASE = "{nv_str}"\n""")
 
+# update utils/edit_mac_app_info.py
+with open("utils/edit_mac_app_info.py", 'r+') as f:
+    lines = f.readlines()
+    f.seek(0)
+    for line in lines:
+        if line.startswith("contents['CFBundleVersion'] ="):
+            f.write(f"contents['CFBundleVersion'] = '{nv_str}'\n")
+        elif line.startswith("contents['CFBundleShortVersionString'] = "):
+            f.write(f"contents['CFBundleShortVersionString'] = '{nv_str}'\n")
+        else:
+            f.write(line)
