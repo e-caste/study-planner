@@ -1,4 +1,7 @@
 altgraph==0.17
+certifi==2020.12.5
+chardet==4.0.0
+idna==2.10
 importlib-metadata==3.5.0
 macholib==1.14
 pymediainfo==5.0.3
@@ -6,5 +9,7 @@ PyPDF2==1.26.0
 PyQt5==5.15.3
 PyQt5-Qt==5.15.2
 PyQt5-sip==12.8.1
+requests==2.25.1
 typing-extensions==3.7.4.3
+urllib3==1.26.4
 zipp==3.4.0
