@@ -1,6 +1,3 @@
-from PyInstaller.utils.win32.versioninfo import VSVersionInfo, FixedFileInfo, StringFileInfo, StringTable, \
-    StringStruct, VarFileInfo, VarStruct
-
 # UTF-8
 #
 # For more details about fixed file info 'ffi' see:
