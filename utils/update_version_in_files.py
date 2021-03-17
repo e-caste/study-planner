@@ -1,4 +1,4 @@
-nv = (2, 2, 0)  # new version to set
+nv = (2, 2, 1)  # new version to set
 nv_str = '.'.join(map(str, nv))
 
 # update windows_version_file.py

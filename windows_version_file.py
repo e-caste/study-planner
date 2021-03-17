@@ -6,8 +6,8 @@ VSVersionInfo(
     ffi=FixedFileInfo(
         # filevers and prodvers should be always a tuple with four items: (1, 2, 3, 4)
         # Set not needed items to zero 0.
-        filevers=(2, 2, 0, 0),
-        prodvers=(2, 2, 0, 0),
+        filevers=(2, 2, 1, 0),
+        prodvers=(2, 2, 1, 0),
         # Contains a bitmask that specifies the valid bits 'flags'r
         mask=0x3f,
         # Contains a bitmask that specifies the Boolean attributes of the file.
@@ -31,12 +31,12 @@ VSVersionInfo(
                     u'040904B0',
                     [StringStruct(u'CompanyName', u'Enrico Castelli'),
                      StringStruct(u'FileDescription', u'Study Planner'),
-                     StringStruct(u'FileVersion', u'2.2.0'),
+                     StringStruct(u'FileVersion', u'2.2.1'),
                      StringStruct(u'InternalName', u'Study Planner'),
                      StringStruct(u'LegalCopyright', u'Copyright (c) Enrico Castelli'),
                      StringStruct(u'OriginalFilename', u'main.py'),
                      StringStruct(u'ProductName', u'Study Planner'),
-                     StringStruct(u'ProductVersion', u'2.2.0')])
+                     StringStruct(u'ProductVersion', u'2.2.1')])
             ]),
         VarFileInfo([VarStruct(u'Translation', [1033, 1200])])
     ]
