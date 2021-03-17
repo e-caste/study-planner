@@ -1,4 +1,3 @@
-from sys import stderr
 from pathlib import Path
 from typing import Tuple, List, Callable
 from threading import Thread
