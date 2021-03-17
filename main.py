@@ -33,7 +33,7 @@ class Analyser(QThread):
 
 class ReleaseFetcher(QThread):
     # only emitted if there is a new release
-    new_release_signal = pyqtSignal(tuple)
+    new_release_signal = pyqtSignal(str)
     new_release = None  # cache to prevent spamming HTTP requests
 
     def run(self):
@@ -43,13 +43,10 @@ class ReleaseFetcher(QThread):
             res = requests.get("https://api.github.com/repos/e-caste/study-planner/releases/latest")
             latest_release = res.json()['tag_name'] if 'tag_name' in res.json() else None
             if latest_release:
-                # https://stackoverflow.com/a/16940351
-                latest_release = tuple(int(num) for num in latest_release.split("."))
-                is_new_release = any(latest > current for latest, current in zip(latest_release, CURRENT_RELEASE))
-                tmp = latest_release if is_new_release else CURRENT_RELEASE
-                self.new_release = tmp
-                self.new_release_signal.emit(tmp)
-                print(f"New release found: {'.'.join(map(str, tmp))}" if is_new_release else "Already on latest release.")
+                is_new_release = latest_release > CURRENT_RELEASE  # string comparison
+                self.new_release = latest_release if is_new_release else CURRENT_RELEASE
+                self.new_release_signal.emit(self.new_release)
+                print(f"New release found: {self.new_release}" if is_new_release else "Already on latest release.")
         except Exception as e:
             print(e, file=sys.stderr)
 
@@ -62,12 +59,10 @@ def fetch_latest_release():
     release_fetcher.start()
 
 
-def _add_link_to_new_release(new_release: tuple):
+def _add_link_to_new_release(new_release: str):
     if new_release == CURRENT_RELEASE or window.centralWidget().showing_new_release:
         return
-    new_release_label = QLabel(t.translate('new_release',
-                                           ".".join(map(str, new_release)),  # https://stackoverflow.com/a/19641614
-                                           ".".join(map(str, CURRENT_RELEASE))))
+    new_release_label = QLabel(t.translate('new_release', new_release, CURRENT_RELEASE))
     new_release_label.setOpenExternalLinks(True)
     window.centralWidget().layout().addWidget(new_release_label)
     window.resize(window.width(), window.height() + 40)
