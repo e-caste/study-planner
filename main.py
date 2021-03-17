@@ -86,6 +86,9 @@ class Window(QMainWindow):
     def closeEvent(self, event: QCloseEvent):
         if isinstance(self.centralWidget(), ShowResult):
             save_slider_preferences(self.centralWidget())
+            set_preference(Preference.dark_mode.value,
+                           PreferenceDefault.dark_mode.value,
+                           window.dark_mode_enabled)
         event.accept()
 
     def init_ui(self):
