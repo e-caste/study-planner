@@ -23,6 +23,7 @@ class Preference(Enum):
     docs_seconds = 'docs_seconds'
     vids_multiplier = 'vids_multiplier'
     day_hours = 'day_hours'
+    dark_mode = 'dark_mode'
 
 
 class PreferenceDefault(Enum):
@@ -30,6 +31,7 @@ class PreferenceDefault(Enum):
     docs_seconds = 60
     vids_multiplier = 1.
     day_hours = 5
+    dark_mode = False
 
 
 def get_preference(preference: Preference, default_value: PreferenceDefault, valid_condition: Callable):
