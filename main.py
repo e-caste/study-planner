@@ -10,9 +10,10 @@ from PyQt5.QtCore import QRect, pyqtSignal, QThread, Qt
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QFileDialog, QHBoxLayout, QVBoxLayout, \
     QPushButton, QFrame, QLineEdit, QDialog, QStackedWidget, QTreeView, QSlider
 from PyQt5.QtGui import QFont, QIcon, QCloseEvent
+import requests
 
 from backend import get_result, Preference, PreferenceDefault, get_preference, set_preference, \
-    DB_PATH
+    DB_PATH, CURRENT_RELEASE
 from waiting_spinner_widget import QtWaitingSpinner
 from translations import Translator
 
@@ -28,6 +29,24 @@ class Analyser(QThread):
         start = time()
         self.result_signal.emit(get_result(self.paths))
         print(f"Time taken to analyse the following paths:\n{self.paths}\n--> {time() - start} s")
+
+
+class ReleaseFetcher(QThread):
+    # only emitted if there is a new release
+    new_release_signal = pyqtSignal(tuple)
+
+    def run(self):
+        try:
+            res = requests.get("https://api.github.com/repos/e-caste/study-planner/releases/latest")
+            latest_release = res.json()['tag_name'] if 'tag_name' in res.json() else None
+            if latest_release:
+                latest_release = (int(num) for num in latest_release.split("."))
+                is_new_release = all(latest >= current for latest, current in zip(latest_release, CURRENT_RELEASE)) and\
+                    any(latest > current for latest, current in zip(latest_release, CURRENT_RELEASE))
+                if is_new_release:
+                    self.new_release_signal.emit(latest_release)
+        except Exception as e:
+            print(e, file=sys.stderr)
 
 
 class Window(QMainWindow):
