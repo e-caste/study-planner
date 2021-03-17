@@ -147,5 +147,9 @@ class Translator:
                   '<a href="https://github.com/e-caste/study-planner/releases">Scaricala qui!</a>',
             'en': '⭐️ New version found: {}&nbsp;-&nbsp;Installed: {}&nbsp;→&nbsp;'
                   '<a href="https://github.com/e-caste/study-planner/releases">Download here!</a>',
-        }
+        },
+        'dark_mode': {
+           'it': "Abilita/disabilita dark mode",
+           'en': "Toggle dark mode",
+        },
     }
