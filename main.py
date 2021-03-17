@@ -45,11 +45,11 @@ class ReleaseFetcher(QThread):
             if latest_release:
                 # https://stackoverflow.com/a/16940351
                 latest_release = tuple(int(num) for num in latest_release.split("."))
-                is_new_release = all(latest >= current for latest, current in zip(latest_release, CURRENT_RELEASE)) and\
-                    any(latest > current for latest, current in zip(latest_release, CURRENT_RELEASE))
+                is_new_release = any(latest > current for latest, current in zip(latest_release, CURRENT_RELEASE))
                 tmp = latest_release if is_new_release else CURRENT_RELEASE
                 self.new_release = tmp
                 self.new_release_signal.emit(tmp)
+                print(f"New release found: {'.'.join(map(str, tmp))}" if is_new_release else "Already on latest release.")
         except Exception as e:
             print(e, file=sys.stderr)
 
