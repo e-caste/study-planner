@@ -1,10 +1,17 @@
-import locale
-from sys import stderr
+from sys import platform, stderr
+if platform.startswith("darwin"):
+    from subprocess import check_output
+else:
+    import locale  # this does not work in a Mac app (but works fine in Python on macOS)
 
 
 class Translator:
     def __init__(self):
-        self.lang = "it" if "it" in locale.getdefaultlocale()[0] else "en"
+        if platform.startswith("darwin"):
+            lang = "it" if "it" in check_output("defaults read -g AppleLanguages".split()).decode('utf-8').split("\n")[1] else "en"
+        else:
+            lang = "it" if "it" in locale.getdefaultlocale()[0] else "en"
+        self.lang = lang
         print(f"Language detected: {self.lang}")
 
     def translate(self, msg: str, *args) -> str:
