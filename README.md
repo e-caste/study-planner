@@ -37,7 +37,7 @@ Some notes on point 3:
 - `pip install -r requirements-dev.txt`
 - `python main.py`
 
-On GNU/Linux you need to install `libmediainfo-dev` with your distribution's package manager.
+On GNU/Linux you need to install `gcc`, `libxcb-xinerama0`, and `libmediainfo-dev` with your distribution's package manager.
 
 ### Credits
 
