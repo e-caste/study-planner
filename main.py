@@ -536,6 +536,7 @@ def main():
 if __name__ == "__main__":
     # redirect GTK warnings to logfile instead of the console
     if platform.startswith("linux"):
+        Path.mkdir(DB_PATH, exist_ok=True)
         with redirect_stderr(open(str(Path.joinpath(DB_PATH, "errors_log.txt")), 'w')):
             main()
     else:
