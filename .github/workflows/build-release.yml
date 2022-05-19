@@ -20,7 +20,7 @@ jobs:
         run: pip install -r requirements-dev.txt
       # see https://docs.github.com/en/actions/guides/building-and-testing-python#specifying-a-python-version
       - name: Create app with pyinstaller
-        run: PYTHONOPTIMIZE=1 pyinstaller --windowed --name "Study Planner" --add-binary '/Users/runner/hostedtoolcache/Python/3.9.*/x64/lib/python3.9/site-packages/pymediainfo/libmediainfo*.dylib:.' --icon icons/icon_square.png main.py
+        run: PYTHONOPTIMIZE=1 pyinstaller --windowed --name "Study Planner" --add-binary '/Users/runner/hostedtoolcache/Python/3.9.*/x64/lib/python3.9/site-packages/pymediainfo/libmediainfo*.dylib:.' --icon icons/icon_square_rounded.icns main.py
       - name: Enable dark mode support and add info to app
         run: python utils/edit_mac_app_info.py
       # - name: Codesign app
