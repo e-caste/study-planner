@@ -28,13 +28,14 @@ jobs:
       - name: Compress app to archive
         run: |
           cd dist
-          zip -r StudyPlanner.app.zip Study\ Planner.app
+          cp ../utils/RUNME.command .
+          zip -r StudyPlanner.zip Study\ Planner.app RUNME.command
           cd ..
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: dist/StudyPlanner.app.zip
+          file: dist/StudyPlanner.zip
           asset_name: study-planner-macos-x86_64-$tag.zip
           tag: ${{ github.ref }}
 
